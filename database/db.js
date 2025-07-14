@@ -3,6 +3,8 @@ const { Sequelize } = require("sequelize");
 const pg = require("pg");
 
 // Feel free to rename the database to whatever you want!
+// push test
+
 const dbName = "capstone-1";
 
 const db = new Sequelize(
