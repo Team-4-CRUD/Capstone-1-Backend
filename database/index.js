@@ -8,15 +8,12 @@ const Vote = require("./vote")
 module.exports = {
   db,
   User,
-<<<<<<< HEAD
   PollForm,
 
 
 
   pollElements,
-=======
 
   Vote,
->>>>>>> jocsan
 };
 
