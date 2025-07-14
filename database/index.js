@@ -20,16 +20,13 @@ Vote.belongsTo(User, { foreignKey: "user_Id" });
 PollForm.hasMany(Vote, { foreignKey: "PollFormId" });
 Vote.belongsTo(PollForm, { foreignKey: "PollFormId" });
 
-PollElement.hasMany(Vote, { foreignKey: "element_Id" });
+pollElements.hasMany(Vote, { foreignKey: "element_Id" });
 Vote.belongsTo(pollElements, { foreignKey: "element_Id" });
 
 module.exports = {
   db,
   User,
   PollForm,
-  pollElements
-
-
-  
-  Vote,
+  pollElements,
+Vote,
 };
