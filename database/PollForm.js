@@ -9,11 +9,13 @@ poll_id: {
 },
 
 title: {
-    type: DataTypes.STRING
+    type: DataTypes.STRING,
+    allowNull: false,
 },
 
 description: {
     type: DataTypes.STRING,
+     allowNull: false,
 },
 
 status: {
@@ -22,6 +24,7 @@ status: {
 
 creator_id: {
     type: DataTypes.INTEGER,
+     allowNull: false,
 },
 
 creator_at: {
