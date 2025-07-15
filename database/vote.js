@@ -2,7 +2,7 @@ const { DataTypes } = require("sequelize");
 const db = require("./db");
 
 const Vote = db.define("vote", {
-  id: {
+  Vote_id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
