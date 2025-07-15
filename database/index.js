@@ -1,5 +1,5 @@
 const db = require("./db");
-const pollElements = require("./pollelements");
+const pollElements = require("./pollElements");
 const User = require("./user");
 const PollForm = require("./PollForm");
 const Vote = require("./vote");
