@@ -1,20 +1,19 @@
 const { DataTypes } = require("sequelize");
 const db = require("./db");
-const bcrypt = require("bcrypt");
+
+
+//primaryKey makes it the official ID, and autoIncrement automatically increases it.
 
 const pollElements = db.define("pollelements", {
   element_id: {
     type: DataTypes.INTEGER,
-    allowNull: false,
-    unique: true,
-    validate: {
-      len: [3, 20],
-    },
+    //needed in order to work as Id
+    primaryKey: true,
+    autoIncrement: true,
   },
-  poll_id: {
+  PollFormId: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    unique: true,
   },
   title: {
     type: DataTypes.STRING,
@@ -23,34 +22,22 @@ const pollElements = db.define("pollelements", {
   },
   description: {
     type: DataTypes.TEXT,
-    allowNull: false,
     allowNull: true,
   },
   clicked: {
     type: DataTypes.BOOLEAN,
     allowNull: false,
+    defaultValue: false,
   },
   picture: {
     type: DataTypes.STRING,
     allowNull: false,
   },
   created_at: {
-    type: DataTypes.TIME,
+    type: DataTypes.DATE,
     allowNull: false,
+    defaultValue: DataTypes.NOW,
   },
 });
-
-// Instance method to check password
-// User.prototype.checkPassword = function (password) {
-//   if (!this.passwordHash) {
-//     return false; // Auth0 users don't have passwords
-//   }
-//   return bcrypt.compareSync(password, this.passwordHash);
-// };
-
-// Class method to hash password
-// User.hashPassword = function (password) {
-//   return bcrypt.hashSync(password, 10);
-// };
 
 module.exports = pollElements;

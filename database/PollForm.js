@@ -1,32 +1,39 @@
 const { DataTypes } = require("sequelize");
 const db = require("./db");
 
-
 const PollForm = db.define("pollform", {
-
-poll_id: {
+  pollForm_id: {
     type: DataTypes.INTEGER,
-},
+    //needed in order to work as Id
+    primaryKey: true,
+    autoIncrement: true,
+  },
 
-title: {
-    type: DataTypes.STRING
-},
-
-description: {
+  title: {
     type: DataTypes.STRING,
-},
+    allowNull: false,
+  },
 
-status: {
+  description: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+
+  status: {
     type: DataTypes.BOOLEAN,
-},
+    allowNull: false,
+    defaultValue: true,
+  },
 
-creator_id: {
+  creator_id: {
     type: DataTypes.INTEGER,
-},
+    allowNull: false,
+  },
 
-creator_at: {
-    type: DataTypes.FLOAT,
-},
+  creator_at: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
 });
 
 module.exports = PollForm;
