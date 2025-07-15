@@ -21,3 +21,4 @@ When an error occurs on the backend (Express), you'll see a message in the termi
 ## Deployment
 
 This project has a vercel.json file, which will make it easier to deploy this project to Vercel. Check the video listed in the cohort repository for a walkthrough of how to connect your deployed Express server to Neon Postgres.
+
