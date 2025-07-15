@@ -17,7 +17,13 @@ router.get("/", async (req, res) => {
 // get pollform by id
 router.get("/:id", async (req, res) => {
   try {
-    const pollForms = await PollForm.findAll();
+    const pollForms = await PollForm.findByPk(req.params.id);
+
+    if (!pollForms) {
+      return res.status(404).send("Failed to load a specific Form! ❌");
+    }
+
+    res.status(200).send(pollForms);
   } catch (err) {
     console.error(err);
     console.log("Failed to fetch a specific Form! ❌");
