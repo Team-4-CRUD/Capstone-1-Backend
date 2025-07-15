@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { PollForm } = require("../database");
+const { PollForm, user } = require("../database");
 
 
 
@@ -8,6 +8,7 @@ const { PollForm } = require("../database");
 router.get("/", async (req, res) => {
     try {
         const pollforms = await PollForm.findAll();
+        res.send(pollforms);
         res.json({
           message: "you cooked up cuhh"
 
@@ -26,10 +27,13 @@ router.get("/:id", async (req, res) => {
         const pollform = await PollForm.findAll();
         res.json({
         message: "you cooked again"
-        })
+        });
+        res.status(200).send("All Forms!")
     }
-    catch {
- 
+    catch (error) {
+        console.error(error);
+        console.log("Fail to get all Form!");
+         res.status(500).send({error: "Failed to get all poll form"});
     }
 
 });
@@ -41,10 +45,13 @@ router.patch("/:id", async (req, res) => {
         const pollform = await PollForm.findAll();
         res.json({
         message: "you cookin huh"
-        })
+        });
+        res.status(200).send("updated form!");
     }
-    catch {
- 
+    catch (error) {
+        console.error(error);
+        console.log("Fail to update Form!");
+         res.status(500).send({error: "Failed to update poll form"});
     }
 
 });
@@ -54,13 +61,22 @@ router.patch("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
 
     try {
-        const pollform = await PollForm.findAll();
-        res.json({
-        message: "pack em up"
-        })
+        const pollform = await PollForm.findByPk(req.params.id);
+         if (!pollform) {
+      return res.status(404).json({ error: "form not found" });
     }
-    catch {
- 
+await pollform.destroy();
+        // res.json({
+        // message: "pack em up"
+        // })
+        res.status(204).send("deleted form!")
+
+        
+    }
+    catch (error) {
+        console.error(error);
+        console.log("Fail to deletd Form!");
+         res.status(500).send({error: "Failed to delete poll form"});
     }
 
 });
@@ -69,13 +85,24 @@ router.delete("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
 
     try {
-        const pollform = await PollForm.findAll();
-        res.json({
-        message: "create something =]"
-        })
+        console.log(req.body);
+        const { title, description, status, creator_at, creator_id} = req.body;
+        const pollform = await PollForm.create({
+            title,
+            description,
+            status,
+            creator_at,
+            creator_id,
+        });
+        res.status(201).send(pollform);
+        console.log("Form has been created!");
+        
+        
     }
-    catch {
- 
+    catch (error) {
+        console.error(error);
+        console.log("Fail to created Form!");
+         res.status(500).send({error: "Failed to create poll form"});
     }
 
 });
