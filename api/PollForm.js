@@ -2,86 +2,56 @@ const express = require("express");
 const router = express.Router();
 const { PollForm } = require("../database");
 
-
-
-// get all pollforms 
+// get all pollforms
 router.get("/", async (req, res) => {
-    try {
-        const pollforms = await PollForm.findAll();
-        res.json({
-          message: "you cooked up cuhh"
-
-        });
-    }
-
-    catch {
-
-    }
+  try {
+    const pollforms = await PollForm.findAll();
+    res.json({
+      message: "you cooked up cuhh",
+    });
+  } catch {}
 });
 
 // get pollform by id
 router.get("/:id", async (req, res) => {
-
-    try {
-        const pollform = await PollForm.findAll();
-        res.json({
-        message: "you cooked again"
-        })
-    }
-    catch {
- 
-    }
-
+  try {
+    const pollform = await PollForm.findAll();
+    res.json({
+      message: "you cooked again",
+    });
+  } catch {}
 });
 
-// patch a pollform by id 
+// patch a pollform by id
 router.patch("/:id", async (req, res) => {
-
-    try {
-        const pollform = await PollForm.findAll();
-        res.json({
-        message: "you cookin huh"
-        })
-    }
-    catch {
- 
-    }
-
+  try {
+    const pollform = await PollForm.findAll();
+    res.json({
+      message: "you cookin huh",
+    });
+  } catch {}
 });
-
 
 // delete a pollform by id
 router.delete("/:id", async (req, res) => {
-
-    try {
-        const pollform = await PollForm.findAll();
-        res.json({
-        message: "pack em up"
-        })
-    }
-    catch {
- 
-    }
-
+  try {
+    const pollform = await PollForm.findAll();
+    res.json({
+      message: "pack em up",
+    });
+  } catch {}
 });
 
 // create a new poll form
 router.post("/", async (req, res) => {
-
-    try {
-        const pollform = await PollForm.findAll();
-        res.json({
-        message: "create something =]"
-        })
-    }
-    catch {
- 
-    }
-
+  try {
+    const pollform = await PollForm.findAll();
+    const newForm = await PollForm.create(req.body);
+    res.status(201).send("created a new form!", newForm);
+    res.json({
+      message: "create something =]",
+    });
+  } catch {}
 });
-
-
-
-
 
 module.exports = router;
