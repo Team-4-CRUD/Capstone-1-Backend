@@ -47,11 +47,14 @@ router.post("/", async (req, res) => {
   try {
     const pollform = await PollForm.findAll();
     const newForm = await PollForm.create(req.body);
-    res.status(201).send("created a new form!", newForm);
+    res.status(201).send("created a new form!✅", newForm);
     res.json({
       message: "create something =]",
     });
-  } catch {}
+  } catch (err) {
+    console.error("Error Creating a Form! ❌");
+    console.error(err);
+  }
 });
 
 module.exports = router;
