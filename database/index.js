@@ -22,16 +22,15 @@ Vote.belongsTo(PollForm, { foreignKey: "PollFormId" });
 
 pollElements.hasMany(Vote, { foreignKey: "element_Id" });
 Vote.belongsTo(pollElements, { foreignKey: "element_Id" });
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-=======
-const PollForm = require("./PollForm")
->>>>>>> main
 
-=======
 const PollForm = require("./PollForm")
->>>>>>> Stashed changes
+
+
+
+const PollForm = require("./PollForm")
+
 const Vote = require("./vote")
+
 
 User.hasMany(PollForm, PollForm, {foreignKey: 'poll_id'});
 PollForm.belongsTo(User);
@@ -45,19 +44,23 @@ module.exports = {
   db,
   User,
 <<<<<<< HEAD
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
   PollForm,
   pollElements,
 Vote,
-=======
->>>>>>> main
 
-=======
+
+
   PollForm,
   pollElements,
->>>>>>> Stashed changes
+
   Vote,
->>>>>>> jocsan
+
+  PollForm,
+  pollElements,
+Vote,
+>>>>>>> main
 };
