@@ -7,6 +7,6 @@ const pollElements = require("./pollElements")
 
 router.use("/test-db", testDbRouter);
 router.use("/PollForm", pollform);
-router.use("/pollElements", pollelements);
+router.use("/pollElements", pollElements);
 
 module.exports = router;

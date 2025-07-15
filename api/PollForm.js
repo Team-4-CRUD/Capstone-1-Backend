@@ -8,6 +8,7 @@ const { PollForm } = require("../database");
 router.get("/", async (req, res) => {
     try {
         const pollforms = await PollForm.findAll();
+        res.send(pollforms);
         res.json({
           message: "you cooked up cuhh"
 
@@ -69,16 +70,26 @@ router.delete("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
 
     try {
-        const pollform = await PollForm.findAll();
-        res.json({
-        message: "create something =]"
-        })
+        console.log(req.body);
+        const { title, description, status, creator_at, creator_id } = req.body;
+        const pollform=await PollForm.create({
+            title,
+            description,
+            status,
+            creator_at,
+            creator_id,
+        });
+        res.status(201).json(pollform);
+
     }
     catch {
+        console.error(error);
+        res.status(500).json({ error: "Failed to create campus:"});
  
     }
 
 });
+
 
 
 
