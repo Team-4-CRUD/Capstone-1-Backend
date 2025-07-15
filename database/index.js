@@ -26,12 +26,9 @@ Vote.belongsTo(pollElements, { foreignKey: "element_Id" });
 module.exports = {
   db,
   User,
-<<<<<<< HEAD
 
   Vote,
-=======
   PollForm,
   pollElements,
 Vote,
->>>>>>> d27d0737895b8b475a93904e0c564520419fddd7
 };
