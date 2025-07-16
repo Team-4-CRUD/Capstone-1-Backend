@@ -34,15 +34,17 @@ router.get("/:id", async (req, res) => {
 // patch a pollform by id
 router.patch("/:id", async (req, res) => {
   try {
-    const pollform = await PollForm.findAll();
-    res.json({
-      message: "you cookin huh",
-    });
-    res.status(200).send("updated form!");
+    const pollform = await PollForm.findByPk(req.params.id);
+    if (!pollform) {
+      return res.status(404).json({ error: "poll not found" });
+    }
+    const updatedForm = await pollform.update(req.body);
+    res.send(updatedForm);
+    console.log("updated form was successful ✅")
   } catch (error) {
     console.error(error);
-    console.log("Fail to update Form!");
-    res.status(500).send({ error: "Failed to update poll form" });
+    console.log("Fail to update Form! ❌");
+    res.status(500).send({ error: "Failed to update poll form ❌" });
   }
 });
 
@@ -76,11 +78,11 @@ router.post("/", async (req, res) => {
       creator_id,
     });
     res.status(201).send(pollform);
-    console.log("Form has been created!");
+    console.log("Form has been created! ✅");
   } catch (error) {
     console.error(error);
-    console.log("Fail to created Form!");
-    res.status(500).send({ error: "Failed to create poll form" });
+    console.log("Fail to created Form! ❌");
+    res.status(500).send({ error: "Failed to create poll form ❌" });
   }
 });
 
