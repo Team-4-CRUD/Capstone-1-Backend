@@ -37,11 +37,12 @@ router.get("/:id", async (req, res) => {
 router.patch("/:id", async (req, res) => {
 
     try {
-        const pollform = await PollForm.findAll();
-        res.json({
-            message: "you cookin huh"
-        });
-        res.status(200).send("updated form!");
+        const pollform = await PollForm.findByPk(req.params.id);
+        if (!pollform){
+          return res.status(404).json({ error: "poll not found" });  
+        }
+        const updatedForm = await pollform.update(req.body);
+        res.send(updatedForm);
     }
     catch (error) {
         console.error(error);
@@ -61,12 +62,7 @@ router.delete("/:id", async (req, res) => {
             return res.status(404).json({ error: "form not found" });
         }
         await pollform.destroy();
-        // res.json({
-        // message: "pack em up"
-        // })
         res.status(204).send("deleted form!")
-
-
     }
     catch (error) {
         console.error(error);
