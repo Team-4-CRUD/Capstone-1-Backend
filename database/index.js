@@ -30,5 +30,5 @@ module.exports = {
   Vote,
   PollForm,
   pollElements,
-Vote,
+  Vote,
 };

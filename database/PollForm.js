@@ -27,7 +27,7 @@ const PollForm = db.define("pollform", {
 
   creator_id: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
   },
 
   creator_at: {
