@@ -33,10 +33,18 @@ router.get("/:id", async (req, res) => {
 // patch a poll elements by id
 router.patch("/:id", async (req, res) => {
   try {
-    res.json({
-      message: "Update poll element",
-    });
-  } catch {}
+    const pollEl = await pollElements.findByPk(req.params.id);
+    if (!pollEl) {
+      return res.status(404).send(`${req.params.id} is not Found`);
+    }
+
+    const updatedPollEl = await pollEl.update(req.body);
+    res.status(201).send(updatedPollEl);
+  } catch (err) {
+    console.error(err);
+    console.log("Failed to update a poll Element! ❌");
+    res.status(500).send({ error: "Failed to update poll element!" });
+  }
 });
 
 // delete a poll elements by id
