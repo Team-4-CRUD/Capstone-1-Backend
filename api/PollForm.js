@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { PollForm, user } = require("../database");
+const { PollForm, User } = require("../database");
 
 // get all pollforms
 router.get("/", async (req, res) => {
@@ -27,18 +27,20 @@ router.get("/:id", async (req, res) => {
   } catch (err) {
     console.error(err);
     console.log("Failed to fetch a specific Form! ❌");
-    res.status(500).send({ error: "Failed to fetch a specific task! ❌" });
+    res.status(500).send({ error: "Failed to fetch a specific Form! ❌" });
   }
 });
 
 // patch a pollform by id
 router.patch("/:id", async (req, res) => {
   try {
-    const pollform = await PollForm.findAll();
-    res.json({
-      message: "you cookin huh",
-    });
-    res.status(200).send("updated form!");
+    const pollform = await PollForm.findByPk(req.params.id);
+    if (!pollform) {
+      return res.status(404).json({ error: "Form not found" });
+    }
+    const updatedForm = await pollform.update(req.body);
+    res.status(200).send(updatedForm);
+    console.log("updated form was successful ✅");
   } catch (error) {
     console.error(error);
     console.log("Fail to update Form!");
@@ -52,14 +54,15 @@ router.delete("/:id", async (req, res) => {
     const formId = await PollForm.findByPk(req.params.id);
 
     if (!formId) {
-      return res.status(404).send("Fail to fetch specific task! ❌");
+      return res.status(404).send("Fail to fetch specific Form! ❌");
     }
 
     await formId.destroy();
-    res.status(200).send("Deleted Form! ✅");
+    res.status(204).send("Deleted Form! ✅");
   } catch (err) {
     console.error(err);
     console.error("Fail to delete a specific form! ❌");
+    res.status(500).send({error: "Failed to delete poll form ❌" })
   }
 });
 

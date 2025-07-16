@@ -18,7 +18,7 @@ const pollElements = db.define("pollelements", {
   title: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true,
+    // unique: true,
   },
   description: {
     type: DataTypes.TEXT,
