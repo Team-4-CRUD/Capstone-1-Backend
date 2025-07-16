@@ -42,10 +42,17 @@ router.patch("/:id", async (req, res) => {
 // delete a poll elements by id
 router.delete("/:id", async (req, res) => {
   try {
-    res.json({
-      message: "Deleted poll element",
-    });
-  } catch {}
+    const pollEl = await pollElements.findByPk(req.params.id);
+    if (!pollEl) {
+      return res.status(404).send("Failed to delete a Poll Element! ❌");
+    }
+    await pollEl.destroy();
+    res.status(200).send(`Poll Element ${req.params.id} has been deleted! ✅`);
+  } catch (err) {
+    console.error(err);
+    console.log("Failed to delete a Poll Element! ❌");
+    res.status(500).send({ error: "Failed to delete a Poll Element! ❌" });
+  }
 });
 
 // create a new poll element
