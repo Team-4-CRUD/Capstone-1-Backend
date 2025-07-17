@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { PollForm } = require("../database");
+const { PollForm, pollElements } = require("../database");
 
 // get all pollforms
 router.get("/", async (req, res) => {
   try {
-    const pollForms = await PollForm.findAll();
+    const pollForms = await PollForm.findAll({ include: pollElements });
     res.status(200).send(pollForms);
   } catch (err) {
     res.status(500).send({ error: "Failed to get all Forms! ❌" });
@@ -17,7 +17,9 @@ router.get("/", async (req, res) => {
 // get pollform by id
 router.get("/:id", async (req, res) => {
   try {
-    const pollForms = await PollForm.findByPk(req.params.id);
+    const pollForms = await PollForm.findByPk(req.params.id, {
+      include: pollElements,
+    });
 
     if (!pollForms) {
       return res.status(404).send("Failed to load a specific Form! ❌");
@@ -69,8 +71,24 @@ router.delete("/:id", async (req, res) => {
 // create a new poll form
 router.post("/", async (req, res) => {
   try {
-    const pollForms = await PollForm.create(req.body);
-    res.status(201).send(pollForms);
+    // 1. extract the different parameters from the request body (ex. title, description, option, info, picture)
+    const { title, description, status, option, info, picture } = req.body;
+    const PollId = await PollForm.findByPk();
+    // 2. create a PollForm with the relevant data {title: title, description: description}
+    const pollForms = await PollForm.create({
+      title: title,
+      description: description,
+      status: status,
+    });
+    // 3. Create a PollElements with the relevant data
+    const pollEl = await pollElements.create({
+      option: option,
+      info: info,
+      picture: picture,
+    });
+    // const pollEl = await pollElements.create(req.body);
+    res.status(201).send(pollForms, pollEl);
+    // res.status(201).send(pollEl);
   } catch (error) {
     console.error(error);
     console.log("Fail to created Form! ❌");

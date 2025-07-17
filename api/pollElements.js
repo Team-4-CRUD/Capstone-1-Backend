@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { pollElements } = require("../database");
+const { pollElements, PollForm } = require("../database");
 
 // get all poll elements
 router.get("/", async (req, res) => {
   try {
-    const pollEl = await pollElements.findAll();
+    const pollEl = await pollElements.findAll({ include: PollForm });
     res.status(200).send(pollEl);
   } catch (err) {
     console.error(err);
@@ -17,7 +17,9 @@ router.get("/", async (req, res) => {
 // get poll elements by id
 router.get("/:id", async (req, res) => {
   try {
-    const pollEl = await pollElements.findByPk(req.params.id);
+    const pollEl = await pollElements.findByPk(req.params.id, {
+      include: PollForm,
+    });
     if (!pollEl) {
       return res.status(404).send(`${req.params.id} can't be found! 💔`);
     }
@@ -64,15 +66,15 @@ router.delete("/:id", async (req, res) => {
 });
 
 // create a new poll element
-router.post("/", async (req, res) => {
-  try {
-    const pollEl = await pollElements.create(req.body);
-    res.status(201).send(pollEl);
-  } catch (err) {
-    console.error(err);
-    console.log("Failed to create a Poll Element! 📝❌");
-    res.status(500).send({ error: "Failed to create Poll Element! 💔📝" });
-  }
-});
+// router.post("/", async (req, res) => {
+//   try {
+//     const pollEl = await pollElements.create(req.body);
+//     res.status(201).send(pollEl);
+//   } catch (err) {
+//     console.error(err);
+//     console.log("Failed to create a Poll Element! 📝❌");
+//     res.status(500).send({ error: "Failed to create Poll Element! 💔📝" });
+//   }
+// });
 
 module.exports = router;

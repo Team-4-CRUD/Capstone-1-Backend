@@ -29,11 +29,6 @@ const PollForm = db.define("pollform", {
     type: DataTypes.INTEGER,
     allowNull: true,
   },
-
-  creator_at: {
-    type: DataTypes.DATE,
-    allowNull: true,
-  },
 });
 
 module.exports = PollForm;
