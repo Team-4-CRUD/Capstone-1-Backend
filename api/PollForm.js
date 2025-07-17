@@ -71,27 +71,20 @@ router.delete("/:id", async (req, res) => {
 // create a new poll form
 router.post("/", async (req, res) => {
   try {
-    // 1. extract the different parameters from the request body (ex. title, description, option, info, picture)
     const { title, description, status, option, info, picture } = req.body;
-    const PollId = await PollForm.findByPk();
-    // 2. create a PollForm with the relevant data {title: title, description: description}
-    const pollForms = await PollForm.create({
-      title: title,
-      description: description,
-      status: status,
-    });
-    // 3. Create a PollElements with the relevant data
+
+    const pollForm = await PollForm.create({ title, description, status });
+
     const pollEl = await pollElements.create({
-      option: option,
-      info: info,
-      picture: picture,
+      PollFormId: pollForm.pollForm_id,
+      option,
+      info,
+      picture,
     });
-    // const pollEl = await pollElements.create(req.body);
-    res.status(201).send(pollForms, pollEl);
-    // res.status(201).send(pollEl);
+
+    res.status(201).send({ pollForm, pollEl });
   } catch (error) {
     console.error(error);
-    console.log("Fail to created Form! ❌");
     res.status(500).send({ error: "Failed to create poll form ❌" });
   }
 });
