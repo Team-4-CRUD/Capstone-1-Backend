@@ -5,86 +5,76 @@ const { pollElements, PollForm } = require("../database");
 // get all poll elements
 router.get("/", async (req, res) => {
   try {
-    const PollElements = await pollElements.findAll();
-    res.status(200).send(PollElements);
+    const pollEl = await pollElements.findAll({ include: PollForm });
+    res.status(200).send(pollEl);
   } catch (err) {
-    res.status(500).send({ error: "Failed to get all Elements! ❌" });
     console.error(err);
-    console.log("Failed to get all poll Elements! ❌");
+    console.error("Failed to get all Poll Elements ❌");
+    res.status(404).send("Failed to Fetch all Poll Elements ❌");
   }
 });
 
 // get poll elements by id
 router.get("/:id", async (req, res) => {
   try {
-    const PollElements = await pollElements.findByPk(req.params.id);
-
-    if (!PollElements) {
-      return res.status(404).send("Failed to load a specific Element! ❌");
+    const pollEl = await pollElements.findByPk(req.params.id, {
+      include: PollForm,
+    });
+    if (!pollEl) {
+      return res.status(404).send(`${req.params.id} can't be found! 💔`);
     }
-    res.status(200).send(PollElements);
+
+    res.status(200).send(pollEl);
   } catch (err) {
     console.error(err);
-    console.log("Failed to fetch a specific Element! ❌");
-    res.status(500).send({ error: "Failed to fetch a Element! ❌" });
+    console.error("Failed to Fetch a specific Poll Element! ❌📝 ");
+    res.status(404).send("Failed to Fetch a Poll Element!. ❌📝");
   }
 });
 
 // patch a poll elements by id
 router.patch("/:id", async (req, res) => {
   try {
-    const PollElement = await pollElements.findByPk(req.params.id);
-
-    if (!PollElement) {
-      return res.status(404).json({ error: "Element not found" });
+    const pollEl = await pollElements.findByPk(req.params.id);
+    if (!pollEl) {
+      return res.status(404).send(`${req.params.id} is not Found`);
     }
 
-    await PollElement.update(req.body);
-
-    console.log("Updated element was successful ✅");
-    res.status(200).json(PollElement);
-  } catch (error) {
-    console.error("Error during update:", error); 
-    res.status(500).json({ error: "Failed to update poll Element ❌" });
+    const updatedPollEl = await pollEl.update(req.body);
+    res.status(201).send(updatedPollEl);
+  } catch (err) {
+    console.error(err);
+    console.log("Failed to update a poll Element! ❌");
+    res.status(500).send({ error: "Failed to update poll element!" });
   }
 });
 
 // delete a poll elements by id
 router.delete("/:id", async (req, res) => {
   try {
-    const PollElements = await pollElements.findByPk(req.params.id);
-    if (!PollElements) {
-      return res.status(404).send("Element not found ❌");
+    const pollEl = await pollElements.findByPk(req.params.id);
+    if (!pollEl) {
+      return res.status(404).send("Failed to delete a Poll Element! ❌");
     }
-    await PollElements.destroy();
-    res.status(204).send({ message: "Element deleted successfully" });
+    await pollEl.destroy();
+    res.status(200).send(`Poll Element ${req.params.id} has been deleted! ✅`);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to delete poll element ❌" });
+    console.log("Failed to delete a Poll Element! ❌");
+    res.status(500).send({ error: "Failed to delete a Poll Element! ❌" });
   }
 });
 
 // create a new poll element
-router.post("/", async (req, res) => {
-  try {
-    console.log(req.body);
-    const { PollFormId, title, description, clicked, picture, created_at } =
-      req.body;
-    const PollElements = await pollElements.create({
-      PollFormId,
-      title,
-      description,
-      clicked,
-      picture,
-      created_at,
-    });
-    res.status(201).send(PollElements);
-    console.log("Form has been created! ✅");
-  } catch (error) {
-    console.error(error);
-    console.log("Fail to created Element! ❌");
-    res.status(500).send({ error: "Failed to create poll Element ❌" });
-  }
-});
+// router.post("/", async (req, res) => {
+//   try {
+//     const pollEl = await pollElements.create(req.body);
+//     res.status(201).send(pollEl);
+//   } catch (err) {
+//     console.error(err);
+//     console.log("Failed to create a Poll Element! 📝❌");
+//     res.status(500).send({ error: "Failed to create Poll Element! 💔📝" });
+//   }
+// });
 
 module.exports = router;
