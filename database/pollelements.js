@@ -16,11 +16,11 @@ const pollElements = db.define("pollelements", {
   },
   option: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
   },
   info: {
     type: DataTypes.TEXT,
-    allowNull: false,
+    allowNull: true,
   },
   clicked: {
     type: DataTypes.BOOLEAN,
@@ -29,7 +29,7 @@ const pollElements = db.define("pollelements", {
   },
   picture: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
   },
   created_at: {
     type: DataTypes.DATE,

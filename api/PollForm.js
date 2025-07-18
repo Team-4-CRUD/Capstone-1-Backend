@@ -84,13 +84,14 @@ router.delete("/:id", async (req, res) => {
 // create a new poll form
 router.post("/", async (req, res) => {
   try {
-    const { title, description, status, Element } = req.body;
+    const { title, description, status, creator_id, Element } = req.body;
 
     const pollForm = await PollForm.create(
       {
         title,
         description,
         status,
+        creator_id,
         pollElements: Element,
       },
       {

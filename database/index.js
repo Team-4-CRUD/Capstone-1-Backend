@@ -11,7 +11,7 @@ User.hasMany(PollForm, { foreignKey: "creator_id" });
 PollForm.belongsTo(User, { foreignKey: "creator_id" });
 
 // to access the pollElements from a PollForm vice versa
-PollForm.hasMany(pollElements, { foreignKey: "PollFormId", as: "pollElements",  });
+PollForm.hasMany(pollElements, { foreignKey: "PollFormId", as: "pollElements", });
 pollElements.belongsTo(PollForm, { foreignKey: "PollFormId", as: "PollForm",});
 
 // For voting
