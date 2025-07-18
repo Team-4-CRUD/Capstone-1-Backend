@@ -10,8 +10,11 @@ const Vote = require("./vote");
 User.hasMany(PollForm, { foreignKey: "creator_id" });
 PollForm.belongsTo(User, { foreignKey: "creator_id" });
 
-PollForm.hasMany(pollElements, { foreignKey: "PollFormId" });
-pollElements.belongsTo(PollForm, { foreignKey: "PollFormId" });
+PollForm.hasMany(pollElements, {
+  foreignKey: "PollFormId",
+  as: "pollElements",
+});
+pollElements.belongsTo(PollForm, { foreignKey: "PollFormId", as: "PollForm" });
 
 // For voting
 User.hasMany(Vote, { foreignKey: "user_Id" });

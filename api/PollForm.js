@@ -5,7 +5,9 @@ const { PollForm, pollElements } = require("../database");
 // get all pollforms
 router.get("/", async (req, res) => {
   try {
-    const pollForms = await PollForm.findAll({ include: pollElements });
+    const pollForms = await PollForm.findAll({
+      include: [{ model: pollElements, as: "pollElements" }],
+    });
     res.status(200).send(pollForms);
   } catch (err) {
     res.status(500).send({ error: "Failed to get all Forms! ❌" });
@@ -71,18 +73,22 @@ router.delete("/:id", async (req, res) => {
 // create a new poll form
 router.post("/", async (req, res) => {
   try {
-    const { title, description, status, option, info, picture } = req.body;
+    const { title, description, status, creator_id, Element } = req.body;
 
-    const pollForm = await PollForm.create({ title, description, status });
+    const pollForm = await PollForm.create(
+      {
+        title,
+        description,
+        status,
+        creator_id,
+        pollElements: Element,
+      },
+      {
+        include: [{ model: pollElements, as: "pollElements" }],
+      }
+    );
 
-    const pollEl = await pollElements.create({
-      PollFormId: pollForm.pollForm_id,
-      option,
-      info,
-      picture,
-    });
-
-    res.status(201).send({ pollForm, pollEl });
+    res.status(201).send(pollForm);
   } catch (error) {
     console.error(error);
     res.status(500).send({ error: "Failed to create poll form ❌" });

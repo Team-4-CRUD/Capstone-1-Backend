@@ -22,19 +22,9 @@ const pollElements = db.define("pollelements", {
     type: DataTypes.TEXT,
     allowNull: true,
   },
-  clicked: {
-    type: DataTypes.BOOLEAN,
-    allowNull: true,
-    defaultValue: false,
-  },
   picture: {
     type: DataTypes.STRING,
     allowNull: true,
-  },
-  created_at: {
-    type: DataTypes.DATE,
-    allowNull: true,
-    defaultValue: DataTypes.NOW,
   },
 });
 
