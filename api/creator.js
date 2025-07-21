@@ -1,13 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const { PollForm, pollElements } = require("../database");
+const { authenticateJWT } = require("../auth");
 
-router.get("/:creator_id", async (req, res) => {
-  const creatorId = req.params.creator_id;
+router.get('/my-polls', authenticateJWT, async (req, res) => {
+  const userId = req.user.id;
   try {
     const pollForms = await PollForm.findAll({
       where: {
-        creator_id: creatorId,
+        creator_id: userId,
       },
       include: [
         {

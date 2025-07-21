@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { PollForm, pollElements } = require("../database");
+const { authenticateJWT } = require("../auth");
 
 // get all pollforms
 router.get("/", async (req, res) => {
@@ -82,16 +83,18 @@ router.delete("/:id", async (req, res) => {
 });
 
 // create a new poll form
-router.post("/", async (req, res) => {
+router.post("/", authenticateJWT, async (req, res) => {
+
+  const userId = req.user.id;
   try {
-    const { title, description, status, creator_id, Element } = req.body;
+    const { title, description, status, Element } = req.body;
 
     const pollForm = await PollForm.create(
       {
         title,
         description,
         status,
-        creator_id,
+        creator_id: userId,
         pollElements: Element,
       },
       {
