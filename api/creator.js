@@ -49,4 +49,29 @@ router.patch("/:id/publish", authenticateJWT, async (req, res) => {
   }
 });
 
+router.patch("/:id/end", authenticateJWT, async (req, res) => {
+  try {
+    const pollForm_id = req.params.id;
+    const userId = req.user.id;
+
+    // Find poll and check ownership
+    const poll = await PollForm.findOne({
+       where: { pollForm_id, creator_id: userId }, 
+    });
+
+    if (!poll)
+      return res.status(404).json({ error: "Poll not found or unauthorized" });
+
+    // Update status to "ended"
+    poll.status = "ended";
+    await poll.save();
+
+    res.json({ message: "Poll ended successfully", poll });
+  } catch (err) {
+    console.error("End error:", err);
+    res.status(500).json({ error: "Failed to end poll" });
+  }
+});
+
+
 module.exports = router;
