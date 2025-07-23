@@ -66,14 +66,21 @@ router.patch("/:id", async (req, res) => {
 
 // delete a pollform by id
 router.delete("/:id", async (req, res) => {
-  try {
-    const formId = await PollForm.findByPk(req.params.id);
+  const { id } = req.params;
 
-    if (!formId) {
+  // Validate the ID
+  if (!id || isNaN(parseInt(id))) {
+    return res.status(400).send({ error: "Invalid poll form ID ❌" });
+  }
+
+  try {
+    const form = await PollForm.findByPk(req.params.id);
+
+    if (!form) {
       return res.status(404).send("Fail to fetch specific Form! ❌");
     }
 
-    await formId.destroy();
+    await form.destroy();
     res.status(204).send("Deleted Form! ✅");
   } catch (err) {
     console.error(err);
@@ -84,7 +91,6 @@ router.delete("/:id", async (req, res) => {
 
 // create a new poll form
 router.post("/", authenticateJWT, async (req, res) => {
-
   const userId = req.user.id;
   try {
     const { title, description, status, Element } = req.body;

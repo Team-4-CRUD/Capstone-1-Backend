@@ -20,14 +20,22 @@ const PollForm = db.define("pollform", {
   },
 
   status: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-    defaultValue: true,
+    type: DataTypes.ENUM("draft", "published", "ended"),
+    defaultValue: "draft",
   },
 
   creator_id: {
     type: DataTypes.INTEGER,
-    allowNull: true,
+    allowNull: false,
+    references: {
+      model: "users",
+      key: "id",
+    },
+  },
+  
+  private: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
   },
 });
 
