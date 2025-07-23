@@ -61,7 +61,7 @@ router.patch("/:id/end", authenticateJWT, async (req, res) => {
     if (!poll)
       return res.status(404).json({ error: "Poll not found or unauthorized" });
 
-    poll.status = "end"; // or 'unpublished'
+    poll.status = "ended"; 
     await poll.save();
 
     res.json({ message: "Poll ended successfully", poll });
