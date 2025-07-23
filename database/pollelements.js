@@ -1,7 +1,6 @@
 const { DataTypes } = require("sequelize");
 const db = require("./db");
 
-
 //primaryKey makes it the official ID, and autoIncrement automatically increases it.
 
 const pollElements = db.define("pollelements", {
@@ -13,29 +12,28 @@ const pollElements = db.define("pollelements", {
   },
   PollFormId: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
   },
-  title: {
+  option: {
     type: DataTypes.STRING,
-    allowNull: false,
-    // unique: true,
+    allowNull: true,
   },
-  description: {
+  info: {
     type: DataTypes.TEXT,
     allowNull: true,
   },
   clicked: {
     type: DataTypes.BOOLEAN,
-    allowNull: false,
+    allowNull: true,
     defaultValue: false,
   },
   picture: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
   },
   created_at: {
     type: DataTypes.DATE,
-    allowNull: false,
+    allowNull: true,
     defaultValue: DataTypes.NOW,
   },
 });
