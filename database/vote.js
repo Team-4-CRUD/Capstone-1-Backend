@@ -14,12 +14,13 @@ const Vote = db.define("vote", {
     unique: true, // optional: prevent duplicate token votes
   },
 
-  user_Id: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
+ user_Id: {
+  type: DataTypes.INTEGER,
+  allowNull: false,
 
-  PollFormId: {
+},
+
+  pollForm_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },

@@ -22,8 +22,8 @@ pollElements.belongsTo(PollForm, { foreignKey: "PollFormId", as: "PollForm" });
 User.hasMany(Vote, { foreignKey: "user_Id" });
 Vote.belongsTo(User, { foreignKey: "user_Id" });
 
-PollForm.hasMany(Vote, { foreignKey: "PollFormId" });
-Vote.belongsTo(PollForm, { foreignKey: "PollFormId" });
+PollForm.hasMany(Vote, { foreignKey: "pollForm_id" });
+Vote.belongsTo(PollForm, { foreignKey: "pollForm_id" });
 
 Vote.hasMany(VoteRank, { foreignKey: "vote_rank_id" });
 VoteRank.belongsTo(Vote, { foreignKey: "vote_rank_id" });

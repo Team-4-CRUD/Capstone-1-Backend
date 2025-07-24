@@ -8,7 +8,9 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
 // Middleware to authenticate JWT tokens
 const authenticateJWT = (req, res, next) => {
-  const token = req.cookies.token;
+  //test postman
+  const authHeader = req.headers.authorization;
+  const token = (authHeader && authHeader.split(" ")[1]) || req.cookies.token;
 
   if (!token) {
     return res.status(401).send({ error: "Access token required" });
@@ -150,6 +152,7 @@ router.post("/signup", async (req, res) => {
     res.send({
       message: "User created successfully",
       user: { id: user.id, username: user.username },
+      token,
     });
   } catch (error) {
     console.error("Signup error:", error);
@@ -201,6 +204,7 @@ router.post("/login", async (req, res) => {
     res.send({
       message: "Login successful",
       user: { id: user.id, username: user.username },
+      token,
     });
   } catch (error) {
     console.error("Login error:", error);
