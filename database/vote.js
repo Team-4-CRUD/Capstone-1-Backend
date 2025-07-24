@@ -14,15 +14,21 @@ const Vote = db.define("vote", {
     unique: true, // optional: prevent duplicate token votes
   },
 
- user_Id: {
-  type: DataTypes.INTEGER,
-  allowNull: false,
-
-},
-
-  pollForm_id: {
+  user_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    references: {
+      model: "users",
+      key: "id",
+    },
+  },
+    pollForm_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: "pollforms",
+      key: "pollForm_id",
+    },
   },
 });
 
