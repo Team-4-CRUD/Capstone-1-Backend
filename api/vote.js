@@ -52,7 +52,7 @@ router.post("/submit", authenticateJWT, async (req, res) => {
 
     // Create vote record
     const vote = await Vote.create({
-      user_Id: userId,
+      user_id: userId,
       pollForm_id: pollFormId,
       voterToken: generateVoterToken(),
     });
@@ -75,6 +75,36 @@ router.post("/submit", authenticateJWT, async (req, res) => {
   } catch (err) {
     console.error("❌ Vote submit error:", err);
     res.status(500).json({ error: "Failed to submit votes ❌" });
+  }
+});
+
+router.get("/results/:pollFormId", async (req, res) => {
+  const { pollFormId } = req.params;
+
+  if (!pollFormId || isNaN(parseInt(pollFormId))) {
+    return res.status(400).send({ error: "Invalid poll form ID ❌" });
+  }
+
+  try {
+    const results = await Vote.findAll({
+      where: { pollForm_id: pollFormId },
+      include: [
+        {
+          model: VoteRank,
+          as: "voteRanks",
+          include: [{ model: pollElements, as: "element" }],
+        },
+      ],
+    });
+
+    if (results.length === 0) {
+      return res.status(404).send("No votes found for this poll form ❌");
+    }
+
+    res.status(200).json(results);
+  } catch (error) {
+    console.error("❌ Error fetching results:", error);
+    res.status(500).send({ error: "Failed to fetch poll results ❌" });
   }
 });
 
