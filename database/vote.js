@@ -7,25 +7,21 @@ const Vote = db.define("vote", {
     primaryKey: true,
     autoIncrement: true,
   },
+
+  voterToken: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true, // optional: prevent duplicate token votes
+  },
+
   user_Id: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+
   PollFormId: {
     type: DataTypes.INTEGER,
     allowNull: false,
-  },
-  element_Id: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  rank: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-  },
-  frequency: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
   },
 });
 

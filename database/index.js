@@ -3,6 +3,7 @@ const pollElements = require("./pollelements");
 const User = require("./user");
 const PollForm = require("./PollForm");
 const Vote = require("./vote");
+const VoteRank = require("./VoteRank");
 
 //Associations 🎂
 
@@ -11,8 +12,11 @@ User.hasMany(PollForm, { foreignKey: "creator_id" });
 PollForm.belongsTo(User, { foreignKey: "creator_id" });
 
 // to access the pollElements from a PollForm vice versa
-PollForm.hasMany(pollElements, { foreignKey: "PollFormId", as: "pollElements", });
-pollElements.belongsTo(PollForm, { foreignKey: "PollFormId", as: "PollForm",});
+PollForm.hasMany(pollElements, {
+  foreignKey: "PollFormId",
+  as: "pollElements",
+});
+pollElements.belongsTo(PollForm, { foreignKey: "PollFormId", as: "PollForm" });
 
 // For voting
 User.hasMany(Vote, { foreignKey: "user_Id" });
@@ -21,8 +25,12 @@ Vote.belongsTo(User, { foreignKey: "user_Id" });
 PollForm.hasMany(Vote, { foreignKey: "PollFormId" });
 Vote.belongsTo(PollForm, { foreignKey: "PollFormId" });
 
-pollElements.hasMany(Vote, { foreignKey: "element_Id" });
-Vote.belongsTo(pollElements, { foreignKey: "element_Id" });
+Vote.hasMany(VoteRank, { foreignKey: "vote_rank_id" });
+VoteRank.belongsTo(Vote, { foreignKey: "vote_rank_id" });
+
+//Each voteRank points to a specific PollElement
+pollElements.hasMany(VoteRank, { foreignKey: "element_Id", as: "voteRanks" });
+VoteRank.belongsTo(pollElements, { foreignKey: "element_Id", as: "voteRanks" });
 
 module.exports = {
   db,
@@ -30,4 +38,5 @@ module.exports = {
   PollForm,
   pollElements,
   Vote,
+  VoteRank,
 };
