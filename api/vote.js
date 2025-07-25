@@ -90,7 +90,7 @@ router.get("/results/:pollFormId", async (req, res) => {
   try {
     const { pollFormId } = req.params;
 
-    // ✅ 1: Fetch and assign to `votes`
+    // ✅ 1: assign to `votes`
     const votes = await Vote.findAll({
       where: { pollForm_id: pollFormId },
       include: [
