@@ -11,6 +11,23 @@ const User = db.define("user", {
       len: [3, 20],
     },
   },
+
+  firstName: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    validate: {
+      len: [3, 20],
+    },
+  },
+
+  lastName: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    validate: {
+      len: [3, 20],
+    },
+  },
+
   email: {
     type: DataTypes.STRING,
     allowNull: true,
@@ -19,11 +36,21 @@ const User = db.define("user", {
       isEmail: true,
     },
   },
+
+  profilePicture: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    validate: {
+      isUrl: true, // Ensures it's a valid URL format
+    },
+  },
+
   auth0Id: {
     type: DataTypes.STRING,
     allowNull: true,
     unique: true,
   },
+
   passwordHash: {
     type: DataTypes.STRING,
     allowNull: true,

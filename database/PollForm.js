@@ -33,10 +33,6 @@ const PollForm = db.define("pollform", {
     },
   },
   
-  private: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true,
-  },
 });
 
 module.exports = PollForm;

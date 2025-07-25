@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const { PollForm, pollElements } = require("../database");
 const { authenticateJWT } = require("../auth");
+const sequelize = require("../database"); // ✅ Sequelize instance
+
 
 // get all pollforms
 router.get("/", async (req, res) => {
@@ -48,19 +50,71 @@ router.get("/:id", async (req, res) => {
 
 // patch a pollform by id
 router.patch("/:id", async (req, res) => {
-  try {
-    const pollForms = await PollForm.findByPk(req.params.id);
+ const transaction = await db.transaction();
 
-    if (!pollForms) {
-      return res.status(404).send("Failed to update Form! ❌");
+  try {
+    // Use your primary key field name in findByPk
+    const pollForm = await PollForm.findByPk(req.params.id, {
+      include: [{ model: pollElements, as: "pollElements" }],
+      transaction,
+    });
+
+    if (!pollForm) {
+      await transaction.rollback();
+      return res.status(404).send("Poll form not found");
     }
 
-    const updatedForm = await pollForms.update(req.body);
-    res.status(200).send(updatedForm);
+    const { title, description, status, pollElements } = req.body;
+
+    // Update poll form fields
+    await pollForm.update({ title, description, status }, { transaction });
+
+    if (pollElements && Array.isArray(pollElements)) {
+      const existingElements = pollForm.pollElements;
+      // Extract existing element ids (using your element_id field)
+      const existingIds = existingElements.map((el) => el.element_id);
+      const incomingIds = pollElements
+        .filter((el) => el.element_id)
+        .map((el) => el.element_id);
+
+      // Delete removed elements
+      const toDeleteIds = existingIds.filter((id) => !incomingIds.includes(id));
+      if (toDeleteIds.length) {
+        await pollElements.destroy({
+          where: { element_id: toDeleteIds },
+          transaction,
+        });
+      }
+
+      // Update or create
+      for (const el of pollElements) {
+        if (el.element_id && existingIds.includes(el.element_id)) {
+          // Update existing
+          await pollElements.update(el, {
+            where: { element_id: el.element_id },
+            transaction,
+          });
+        } else {
+          // Create new (make sure to set PollFormId to pollForm.pollForm_id)
+          await pollElements.create(
+            { ...el, PollFormId: pollForm.pollForm_id },
+            { transaction }
+          );
+        }
+      }
+    }
+
+    await transaction.commit();
+
+    // Reload and send updated form with elements
+    const updatedForm = await PollForm.findByPk(req.params.id, {
+      include: [{ model: pollElements, as: "pollElements" }],
+    });
+    res.status(200).json(updatedForm);
   } catch (error) {
+    await transaction.rollback();
     console.error(error);
-    console.log("Fail to update Form! ❌");
-    res.status(500).send({ error: "Failed to update poll form ❌" });
+    res.status(500).send({ error: "Failed to update poll form" });
   }
 });
 

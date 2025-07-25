@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Vote, VoteRank, pollElements } = require("../database");
+const { Vote, VoteRank, pollElements, PollForm } = require("../database");
 const { authenticateJWT } = require("../auth");
 
 const crypto = require("crypto");
@@ -30,7 +30,9 @@ router.post("/submit", authenticateJWT, async (req, res) => {
       (r) => !validElementIds.includes(r.elementId)
     );
     if (invalidElements.length > 0) {
-      return res.status(400).json({ error: "Response contains invalid element IDs" });
+      return res
+        .status(400)
+        .json({ error: "Response contains invalid element IDs" });
     }
 
     // Validate ranks and duplicates
@@ -39,7 +41,9 @@ router.post("/submit", authenticateJWT, async (req, res) => {
     const maxRank = pollEle.length;
 
     if (ranks.some((rank) => rank < 1 || rank > maxRank)) {
-      return res.status(400).json({ error: "Ranks must be between 1 and " + pollEle.length });
+      return res
+        .status(400)
+        .json({ error: "Ranks must be between 1 and " + pollEle.length });
     }
 
     if (new Set(ranks).size !== ranks.length) {
@@ -47,7 +51,9 @@ router.post("/submit", authenticateJWT, async (req, res) => {
     }
 
     if (new Set(elements).size !== elements.length) {
-      return res.status(400).json({ error: "Duplicate elements in response are not allowed" });
+      return res
+        .status(400)
+        .json({ error: "Duplicate elements in response are not allowed" });
     }
 
     // Create vote record
@@ -78,35 +84,100 @@ router.post("/submit", authenticateJWT, async (req, res) => {
   }
 });
 
+//get all the votes from the form
+
 router.get("/results/:pollFormId", async (req, res) => {
-  const { pollFormId } = req.params;
-
-  if (!pollFormId || isNaN(parseInt(pollFormId))) {
-    return res.status(400).send({ error: "Invalid poll form ID ❌" });
-  }
-
   try {
-    const results = await Vote.findAll({
+    const { pollFormId } = req.params;
+
+    // ✅ 1: Fetch and assign to `votes`
+    const votes = await Vote.findAll({
       where: { pollForm_id: pollFormId },
       include: [
         {
           model: VoteRank,
-          as: "voteRanks",
-          include: [{ model: pollElements, as: "element" }],
+          include: [{ model: pollElements, as: "pollElement" }],
         },
       ],
     });
 
-    if (results.length === 0) {
-      return res.status(404).send("No votes found for this poll form ❌");
+    // ✅ 2: Build ballots
+    const ballots = [];
+    for (const vote of votes) {
+      if (!vote.voteRanks || !Array.isArray(vote.voteRanks)) continue;
+
+      const sortedRanks = vote.voteRanks.sort((a, b) => a.rank - b.rank);
+      const ballot = sortedRanks
+        .map((vr) => vr.pollElement?.option)
+        .filter(Boolean);
+
+      if (ballot.length > 0) ballots.push(ballot);
     }
 
-    res.status(200).json(results);
-  } catch (error) {
-    console.error("❌ Error fetching results:", error);
-    res.status(500).send({ error: "Failed to fetch poll results ❌" });
+    if (ballots.length === 0) {
+      return res.json({ message: "No valid ballots found" });
+    }
+
+    // ✅ 3: Instant Runoff
+    const InstantRunOff = (ballots) => {
+      let candidates = new Set(ballots.flat());
+      let round = 1;
+
+      while (true) {
+        round++;
+         // Initialize tally: each candidate starts with 0 votes this round
+        const tally = {};
+        for (const c of candidates) tally[c] = 0;
+        //       tally = {
+      //   A: 0,
+      //   B: 0,
+      //   C: 0,
+      // }
+
+      // It counts only the ballots that still have a valid current choice in this round.
+        let activeBallots = 0;
+
+        for (const ballot of ballots) {
+            // .find reads through each ballot from index 0 onward,
+        // and .has checks whether each candidate is still in the race
+          const top = ballot.find((c) => candidates.has(c));
+          if (top) {
+            tally[top]++;
+            activeBallots++;
+          }
+        }
+
+         //lets check for winner, if anyone ovver 50%
+      // turns your tally object into an array of [candidate, count] pairs
+      // [ ["A", 2], ["B", 3], ["C", 1] ], 6 = activeBallots , 3 > 6/3 = 3 , no winner yet
+        for (const [candidate, count] of Object.entries(tally)) {
+          if (count > activeBallots / 2) return candidate;
+        }
+
+        //This finds the smallest number of votes any candidate currently has in rank 1.
+        const minVotes = Math.min(...Object.values(tally));
+          //returns [candidate, count] pairs.
+        const toEliminate = Object.entries(tally)
+        //picks pair where it matches min vote
+          .filter(([_, count]) => count === minVotes)
+          //find the key it belongs to 
+          .map(([c]) => c);
+
+        if (toEliminate.length === candidates.size) {
+          return Array.from(candidates); // Tie
+        }
+
+        for (const elim of toEliminate) candidates.delete(elim);
+        if (candidates.size === 0) return "No winner";
+      }
+    };
+
+    const result = InstantRunOff(ballots);
+    return res.json({ result });
+  } catch (err) {
+    console.error("❌ Error in /results:", err.message, err.stack);
+    return res.status(500).json({ error: err.message });
   }
 });
-
 
 module.exports = router;
