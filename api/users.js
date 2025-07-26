@@ -25,6 +25,28 @@ router.put("/UserInfo", authenticateJWT, async (req, res) => {
   }
 });
 
+// users.js or auth.js
+router.get("/me", authenticateJWT, async (req, res) => {
+  try {
+    const userId = req.user.id; // Assuming user info is in JWT payload
+    const user = await User.findByPk(userId); // Find the user by ID
+    if (!user) {
+      return res.status(404).send({ error: "User not found" });
+    }
+
+    // Send the user's data (including profile image)
+    res.send({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      profilePicture: user.profilePicture, // Assuming profilePicture is a column in the User model
+    });
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    res.status(500).send({ error: "Internal server error" });
+  }
+});
+
 // Get all users
 router.get("/", async (req, res) => {
   try {
@@ -85,7 +107,5 @@ router.patch("/:id", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
-module.exports = router;
 
 module.exports = router;
