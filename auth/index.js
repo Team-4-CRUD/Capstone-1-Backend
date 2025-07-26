@@ -257,19 +257,30 @@ router.post("/logout", (req, res) => {
 });
 
 // Get current user route (protected)
-router.get("/me", (req, res) => {
-  const token = req.cookies.token;
+router.get("/me", authenticateJWT, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findByPk(userId);
 
-  if (!token) {
-    return res.send({});
-  }
-
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(403).send({ error: "Invalid or expired token" });
+    if (!user) {
+      return res.status(404).send({ error: "User not found" });
     }
-    res.send({ user: user });
-  });
+
+    res.send({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      profilePicture: user.profilePicture,
+      isAdmin: user.isAdmin,
+    });
+
+    console.log("Fetched user in /me:", user.toJSON());
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    res.status(500).send({ error: "Internal server error" });
+  }
 });
 
 //admin

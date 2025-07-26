@@ -31,17 +31,24 @@ router.get("/me", authenticateJWT, async (req, res) => {
   try {
     const userId = req.user.id;
     const user = await User.findByPk(userId);
+
     if (!user) {
       return res.status(404).send({ error: "User not found" });
     }
 
-    // Send the user's data (including profile image)
     res.send({
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      profilePicture: user.profilePicture,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        profilePicture: user.profilePicture,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        isAdmin: user.isAdmin,
+      },
     });
+
+    console.log("Received update data:", req.body);
   } catch (error) {
     console.error("Error fetching user data:", error);
     res.status(500).send({ error: "Internal server error" });
