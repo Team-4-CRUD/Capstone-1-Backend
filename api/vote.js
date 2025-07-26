@@ -10,23 +10,20 @@ function generateVoterToken() {
 }
 
 // Route to check if the authenticated user has voted in a poll
-// router.get("/has-voted/:pollFormId", authenticateJWT, async (req, res) => {
-//   try {
-//     const userId = req.user.id;
-//     const { pollFormId } = req.params;
-//     const vote = await Vote.findOne({
-//       where: { user_id: userId, pollForm_id: pollFormId },
-//     });
+router.get("/has-voted/:pollFormId", authenticateJWT, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { pollFormId } = req.params;
+    const vote = await Vote.findOne({
+      where: { user_id: userId, pollForm_id: pollFormId },
+    });
 
-//     if(vote) {
-//       return res.status(409).json({ error: "User has already voted on this poll" });
-//     }
-//     res.json({ hasVoted: !!vote });
-//   } catch (err) {
-//     console.error("❌ Error in /has-voted:", err.message, err.stack);
-//     return res.status(500).json({ error: err.message });
-//   }
-// });
+    res.json({ hasVoted: !!vote });
+  } catch (err) {
+    console.error("❌ Error in /has-voted:", err.message, err.stack);
+    return res.status(500).json({ error: err.message });
+  }
+});
 
 // not sure if this what you were looking for
 router.get("/voted-polls", authenticateJWT, async (req, res) => {
