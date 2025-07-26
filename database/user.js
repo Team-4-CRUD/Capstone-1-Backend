@@ -40,8 +40,8 @@ const User = db.define("user", {
   profilePicture: {
     type: DataTypes.STRING,
     allowNull: true,
-    validate: {
-      isUrl: true, // Ensures it's a valid URL format
+     validate: {
+      isEmail: true,
     },
   },
 

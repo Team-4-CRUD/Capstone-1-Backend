@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { User } = require("../database");
+const { authenticateJWT } = require("../auth");
 
 router.delete("/:id", async (req, res) => {
   try {
@@ -15,6 +16,14 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-
+router.get("/AllUsers", authenticateJWT, async (req, res) => {
+  try {
+    const Users = await User.findAll();
+    res.status(200).json(users);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ error: "Failed to get all users" });
+  }
+});
 
 module.exports = router;
