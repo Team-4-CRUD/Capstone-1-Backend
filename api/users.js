@@ -3,24 +3,25 @@ const router = express.Router();
 const { User } = require("../database");
 const { authenticateJWT } = require("../auth");
 // Create User Info
-router.post("/UserInfo", authenticateJWT, async (req, res) => {
+// Update logged-in user's info
+router.put("/UserInfo", authenticateJWT, async (req, res) => {
   try {
-    const username = `user_${req.user.id}`;
-    console.log(username);
     const { firstName, lastName, email, profilePicture } = req.body;
 
-    const userInfo = await User.create({
-      username,
-      firstName,
-      lastName,
-      email,
-      profilePicture,
-    });
+    const user = await User.findByPk(req.user.id);
+    if (!user) return res.status(404).send({ error: "User not found" });
 
-    res.status(201).send(userInfo);
+    user.firstName = firstName || user.firstName;
+    user.lastName = lastName || user.lastName;
+    user.email = email || user.email;
+    user.profilePicture = profilePicture || user.profilePicture;
+
+    await user.save();
+
+    res.status(200).send(user);
   } catch (err) {
     console.error(err);
-    res.status(500).send({ error: "Failed to create UserInfo" });
+    res.status(500).send({ error: "Failed to update user info" });
   }
 });
 
@@ -44,7 +45,7 @@ router.get("/:id", async (req, res) => {
       return res.status(404).send({ error: "User not found" });
     }
 
-    res.status(200).send(user); // username will be whatever was saved, hopefully a string
+    res.status(200).send(user);
   } catch (err) {
     console.error(err);
     res.status(500).send({ error: "Failed to get user" });
@@ -53,23 +54,38 @@ router.get("/:id", async (req, res) => {
 
 router.patch("/:id", async (req, res) => {
   const userId = parseInt(req.params.id);
-  const updateData = req.body; // fixed typo here
+  const updateData = req.body;
 
   try {
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: updateData,
-    });
+    // Log the update data for debugging
+    console.log("Received update data:", updateData);
 
-    res.status(200).json({ message: "User updated successfully", user: updatedUser });
-  } catch (err) {
-    if (err.code === 'P2025') {
-      // Prisma error code for record not found
+    // Find the user by ID
+    const user = await User.findByPk(userId);
+    if (!user) {
+      console.log(`User with id ${userId} not found`);
       return res.status(404).json({ message: "User not found" });
     }
-    console.error("Error updating user: ", err);
+
+    // Update user record in the database
+    await user.update(updateData);
+
+    // Respond with the updated user data
+    res.status(200).json({ message: "User updated successfully", user });
+  } catch (err) {
+    // Log the full error to understand it
+    console.error("Error updating user:", err);
+
+    // Handle specific Prisma error for record not found
+    if (err.code === "P2025") {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // General server error
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
+module.exports = router;
 
 module.exports = router;

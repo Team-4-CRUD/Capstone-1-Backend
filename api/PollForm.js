@@ -52,50 +52,80 @@ router.patch("/:id", authenticateJWT, async (req, res) => {
   const transaction = await sequelize.transaction();
 
   try {
-    const pollForm = await PollForm.findByPk(req.params.id, { transaction });
+    const pollForm = await PollForm.findByPk(req.params.id, {
+      include: [{ model: pollElements, as: "pollElements" }],
+      transaction,
+    });
 
     if (!pollForm) {
       await transaction.rollback();
       return res.status(404).send("Poll form not found");
     }
 
-    // Now pollForm is defined, you can use it here:
+    // Update main poll form
     await pollForm.update(
       {
         title: req.body.title,
         description: req.body.description,
+        private: req.body.private,
       },
       { transaction }
     );
 
-    // Use pollForm.pollForm_id or pollForm.id (check your model) below:
-    const pollFormId = pollForm.pollForm_id; // Adjust if your PK is named differently
+    const pollFormId = pollForm.pollForm_id;
 
-    if (Array.isArray(req.body.pollElements)) {
-      for (const element of req.body.pollElements) {
-        if (element.element_id) {
-          await pollElements.update(
-            {
-              option: element.option,
-              info: element.info,
-              picture: element.picture,
-            },
-            {
-              where: { element_id: element.element_id, PollFormId: pollFormId },
-              transaction,
-            }
-          );
-        } else {
-          await pollElements.create(
-            {
-              option: element.option,
-              info: element.info,
-              picture: element.picture,
+    const incomingElements = req.body.pollElements || [];
+
+    // Find existing elements
+    const existingElements = pollForm.pollElements;
+
+    // Get list of IDs from frontend
+    const incomingIds = incomingElements
+      .filter((el) => el.element_id)
+      .map((el) => el.element_id);
+
+    // Delete any element not in incoming list
+    const elementsToDelete = existingElements.filter(
+      (existing) => !incomingIds.includes(existing.element_id)
+    );
+
+    for (const toDelete of elementsToDelete) {
+      await pollElements.destroy({
+        where: {
+          element_id: toDelete.element_id,
+          PollFormId: pollFormId,
+        },
+        transaction,
+      });
+    }
+
+    // Now update or create elements
+    for (const element of incomingElements) {
+      if (element.element_id) {
+        await pollElements.update(
+          {
+            option: element.option,
+            info: element.info,
+            picture: element.picture,
+          },
+          {
+            where: {
+              element_id: element.element_id,
               PollFormId: pollFormId,
             },
-            { transaction }
-          );
-        }
+            transaction,
+          }
+        );
+      } else {
+        await pollElements.create(
+          {
+            option: element.option,
+            info: element.info,
+            picture: element.picture,
+            PollFormId: pollFormId,
+          },
+          { transaction }
+        );
       }
     }
 

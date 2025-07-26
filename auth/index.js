@@ -106,37 +106,54 @@ router.post("/auth0", async (req, res) => {
 // Signup route
 router.post("/signup", async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, firstName, lastName, email, profilePicture } =
+      req.body;
 
     if (!username || !password) {
-      return res
-        .status(400)
-        .send({ error: "Username and password are required" });
+      return res.status(400).send({
+        error: "Username and password are required",
+      });
     }
 
     if (password.length < 6) {
-      return res
-        .status(400)
-        .send({ error: "Password must be at least 6 characters long" });
+      return res.status(400).send({
+        error: "Password must be at least 6 characters long",
+      });
     }
 
-    // Check if user already exists
     const existingUser = await User.findOne({ where: { username } });
     if (existingUser) {
-      return res.status(409).send({ error: "Username already exists" });
+      return res
+        .status(409)
+        .send({ error: `Username "${username}" already exists` });
     }
 
-    // Create new user
-    const passwordHash = User.hashPassword(password);
-    const user = await User.create({ username, passwordHash });
+    if (email) {
+      const emailInUse = await User.findOne({ where: { email } });
+      if (emailInUse) {
+        return res
+          .status(409)
+          .send({ error: `Email "${email}" already in use` });
+      }
+    }
 
-    // Generate JWT token
+    const passwordHash = User.hashPassword(password);
+
+    const user = await User.create({
+      username,
+      passwordHash,
+      firstName,
+      lastName,
+      email,
+      profilePicture,
+    });
+
     const token = jwt.sign(
       {
         id: user.id,
         username: user.username,
-        auth0Id: user.auth0Id,
         email: user.email,
+        auth0Id: user.auth0Id,
       },
       JWT_SECRET,
       { expiresIn: "24h" }
@@ -149,14 +166,21 @@ router.post("/signup", async (req, res) => {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
 
-    res.send({
+    res.status(201).send({
       message: "User created successfully",
-      user: { id: user.id, username: user.username },
+      user: {
+        id: user.id,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        profilePicture: user.profilePicture,
+      },
       token,
     });
   } catch (error) {
     console.error("Signup error:", error);
-    res.sendStatus(500);
+    res.status(500).send({ error: "Internal server error" });
   }
 });
 
@@ -180,6 +204,11 @@ router.post("/login", async (req, res) => {
     // Check password
     if (!user.checkPassword(password)) {
       return res.status(401).send({ error: "Invalid credentials" });
+    }
+
+    const emailInUse = await User.findOne({ where: { email } });
+    if (emailInUse) {
+      return res.status(409).send({ error: "Email already in use" });
     }
 
     // Generate JWT token
