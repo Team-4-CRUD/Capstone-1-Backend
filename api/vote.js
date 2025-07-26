@@ -195,4 +195,24 @@ router.get("/results/:pollFormId", async (req, res) => {
   }
 });
 
+router.get("/TotalVoteCast/:PollId", async (req, res) => {
+  try {
+    const pollId = req.params.PollId;
+
+    const poll = await PollForm.findByPk(pollId);
+    if (!poll) return res.status(404).send("Poll not found.");
+
+    const totalVotes = await Vote.count({
+      where: { pollForm_id: pollId }, // only count votes for this poll
+    });
+
+    res.status(200).send({ pollId, totalVotes });
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .send({ message: "Failed to get total votes for this poll" });
+  }
+});
+
 module.exports = router;

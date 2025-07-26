@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { User } = require("../database");
+const { User, PollForm } = require("../database");
 const { authenticateJWT } = require("../auth");
 // Create User Info
 // Update logged-in user's info
@@ -28,8 +28,8 @@ router.put("/UserInfo", authenticateJWT, async (req, res) => {
 // users.js or auth.js
 router.get("/me", authenticateJWT, async (req, res) => {
   try {
-    const userId = req.user.id; // Assuming user info is in JWT payload
-    const user = await User.findByPk(userId); // Find the user by ID
+    const userId = req.user.id; 
+    const user = await User.findByPk(userId); 
     if (!user) {
       return res.status(404).send({ error: "User not found" });
     }
@@ -39,7 +39,7 @@ router.get("/me", authenticateJWT, async (req, res) => {
       id: user.id,
       username: user.username,
       email: user.email,
-      profilePicture: user.profilePicture, // Assuming profilePicture is a column in the User model
+      profilePicture: user.profilePicture, 
     });
   } catch (error) {
     console.error("Error fetching user data:", error);
@@ -47,7 +47,7 @@ router.get("/me", authenticateJWT, async (req, res) => {
   }
 });
 
-// Get all users
+// Get all users... just for testing postman
 router.get("/", async (req, res) => {
   try {
     const usersInfo = await User.findAll();
@@ -58,7 +58,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Get user by ID
+// Get user by ID... just for testing postman
 router.get("/:id", async (req, res) => {
   try {
     const user = await User.findByPk(req.params.id);
@@ -108,4 +108,17 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
+
+// router.get("my-votedPoll", authenticateJWT, async, (req, res) => {
+//   try{
+//     const
+
+//   }catch(err){
+//     console.error(err);
+//     res.status(500).send({message: "No voted Polls found! "});
+//   }
+// })
+
 module.exports = router;
+
+

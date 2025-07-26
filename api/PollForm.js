@@ -62,6 +62,11 @@ router.patch("/:id", authenticateJWT, async (req, res) => {
       return res.status(404).send("Poll form not found");
     }
 
+    if (pollForm.disabled) {
+      await transaction.rollback();
+      return res.status(403).send("Poll form is disabled and cannot be edited");
+    }
+
     // Update main poll form
     await pollForm.update(
       {
