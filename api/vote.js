@@ -51,7 +51,6 @@ router.get("/voted-polls", authenticateJWT, async (req, res) => {
   }
 });
 
-
 router.post("/submit", authenticateJWT, async (req, res) => {
   console.log("🔍 Authenticated user ID:", req.user.id);
   const userId = req.user.id;
@@ -176,7 +175,9 @@ router.get("/results/:pollFormId", async (req, res) => {
     // ✅ 3: Instant Runoff
     const InstantRunOff = (ballots) => {
       let candidates = new Set(ballots.flat());
-      let round = 1;
+      const rounds = [];
+      let activeCandidates = new Set(candidates);
+      let roundNumber = 1;
 
       while (true) {
         round++;
@@ -202,11 +203,21 @@ router.get("/results/:pollFormId", async (req, res) => {
           }
         }
 
+        rounds.push({
+          round: roundNumber++,
+          tally: { ...tally },
+        });
+
         //lets check for winner, if anyone ovver 50%
         // turns your tally object into an array of [candidate, count] pairs
         // [ ["A", 2], ["B", 3], ["C", 1] ], 6 = activeBallots , 3 > 6/3 = 3 , no winner yet
         for (const [candidate, count] of Object.entries(tally)) {
-          if (count > activeBallots / 2) return candidate;
+          if (count > activeBallots / 2) {
+            return {
+              winner: candidate,
+              rounds,
+            };
+          }
         }
 
         //This finds the smallest number of votes any candidate currently has in rank 1.
@@ -218,12 +229,27 @@ router.get("/results/:pollFormId", async (req, res) => {
           //find the key it belongs to
           .map(([c]) => c);
 
-        if (toEliminate.length === candidates.size) {
-          return Array.from(candidates); // Tie
+        // Tie or all remaining candidates have same vote count
+        if (toEliminate.length === activeCandidates.size) {
+          return {
+            winner: Array.from(activeCandidates),
+            tie: true,
+            rounds,
+          };
         }
 
-        for (const elim of toEliminate) candidates.delete(elim);
-        if (candidates.size === 0) return "No winner";
+        // Eliminate lowest candidates
+        for (const elim of toEliminate) activeCandidates.delete(elim);
+
+        // If no one left, it's over
+        if (activeCandidates.size === 0) {
+          return {
+            winner: null,
+            tie: true,
+            tiedCandidates: [],
+            rounds,
+          };
+        }
       }
     };
 
