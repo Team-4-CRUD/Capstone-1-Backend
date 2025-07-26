@@ -3,6 +3,11 @@ const db = require("./db");
 const bcrypt = require("bcrypt");
 
 const User = db.define("user", {
+  isAdmin: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
+
   username: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -32,16 +37,16 @@ const User = db.define("user", {
     type: DataTypes.STRING,
     allowNull: true,
     unique: true,
-    validate: {
-      isEmail: true,
-    },
+    // validate: {
+    //   isEmail: true,
+    // },
   },
   profilePicture: {
     type: DataTypes.STRING,
     allowNull: true,
-    validate: {
-      isUrl: true,
-    },
+    // validate: {
+    //   isUrl: true,
+    // },
   },
 
   auth0Id: {
