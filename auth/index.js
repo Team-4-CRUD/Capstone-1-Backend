@@ -190,7 +190,6 @@ router.post("/signup", async (req, res) => {
 // Login route
 router.post("/login", async (req, res) => {
   try {
-
     // login with email or username
     const { username: identifier, password } = req.body;
 
@@ -206,6 +205,10 @@ router.post("/login", async (req, res) => {
         [Op.or]: [{ username: identifier }, { email: identifier }],
       },
     });
+
+    if (user.disabled) {
+      return res.status(403).send({ error: "Your account is disabled." });
+    }
 
     // Check password
     if (!user.checkPassword(password)) {
@@ -264,7 +267,6 @@ router.get("/me", (req, res) => {
   });
 });
 
-
 //admin
 
 const adminAuthenticate = (req, res, next) => {
@@ -289,4 +291,4 @@ const adminAuthenticate = (req, res, next) => {
   });
 };
 
-module.exports = { router, authenticateJWT, adminAuthenticate  };
+module.exports = { router, authenticateJWT, adminAuthenticate };

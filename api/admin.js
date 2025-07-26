@@ -42,6 +42,7 @@ router.get(
           username: {
             [Op.iLike]: `%${search}%`,
           },
+          disabled: false,
         },
         limit,
         offset,
@@ -68,9 +69,14 @@ router.post(
   authenticateJWT,
   async (req, res) => {
     try {
-      const poll = await PollForm.findByPk(req.params.id);
+      const poll = await PollForm.findOne({
+        where: {
+          id: req.params.id,
+          disabled: false, // only fetch if not disabled
+        },
+      });
 
-      if (!poll) return res.status(404).send({ error: "Form not found" });
+      if (!poll) return res.status(404).send({ error: "Poll not found or disabled" });
 
       poll.disabled = true; // or poll.isDisabled = true; depending on your model
 
