@@ -9,6 +9,21 @@ function generateVoterToken() {
   return crypto.randomBytes(16).toString("hex");
 }
 
+// Route to check if the authenticated user has voted in a poll
+router.get("/has-voted/:pollFormId", authenticateJWT, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { pollFormId } = req.params;
+    const vote = await Vote.findOne({
+      where: { user_id: userId, pollForm_id: pollFormId },
+    });
+    res.json({ hasVoted: !!vote });
+  } catch (err) {
+    console.error("❌ Error in /has-voted:", err.message, err.stack);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 router.post("/submit", authenticateJWT, async (req, res) => {
   console.log("🔍 Authenticated user ID:", req.user.id);
   const userId = req.user.id;
@@ -125,21 +140,21 @@ router.get("/results/:pollFormId", async (req, res) => {
 
       while (true) {
         round++;
-         // Initialize tally: each candidate starts with 0 votes this round
+        // Initialize tally: each candidate starts with 0 votes this round
         const tally = {};
         for (const c of candidates) tally[c] = 0;
         //       tally = {
-      //   A: 0,
-      //   B: 0,
-      //   C: 0,
-      // }
+        //   A: 0,
+        //   B: 0,
+        //   C: 0,
+        // }
 
-      // It counts only the ballots that still have a valid current choice in this round.
+        // It counts only the ballots that still have a valid current choice in this round.
         let activeBallots = 0;
 
         for (const ballot of ballots) {
-            // .find reads through each ballot from index 0 onward,
-        // and .has checks whether each candidate is still in the race
+          // .find reads through each ballot from index 0 onward,
+          // and .has checks whether each candidate is still in the race
           const top = ballot.find((c) => candidates.has(c));
           if (top) {
             tally[top]++;
@@ -147,20 +162,20 @@ router.get("/results/:pollFormId", async (req, res) => {
           }
         }
 
-         //lets check for winner, if anyone ovver 50%
-      // turns your tally object into an array of [candidate, count] pairs
-      // [ ["A", 2], ["B", 3], ["C", 1] ], 6 = activeBallots , 3 > 6/3 = 3 , no winner yet
+        //lets check for winner, if anyone ovver 50%
+        // turns your tally object into an array of [candidate, count] pairs
+        // [ ["A", 2], ["B", 3], ["C", 1] ], 6 = activeBallots , 3 > 6/3 = 3 , no winner yet
         for (const [candidate, count] of Object.entries(tally)) {
           if (count > activeBallots / 2) return candidate;
         }
 
         //This finds the smallest number of votes any candidate currently has in rank 1.
         const minVotes = Math.min(...Object.values(tally));
-          //returns [candidate, count] pairs.
+        //returns [candidate, count] pairs.
         const toEliminate = Object.entries(tally)
-        //picks pair where it matches min vote
+          //picks pair where it matches min vote
           .filter(([_, count]) => count === minVotes)
-          //find the key it belongs to 
+          //find the key it belongs to
           .map(([c]) => c);
 
         if (toEliminate.length === candidates.size) {
