@@ -1,31 +1,91 @@
 const express = require("express");
 const router = express.Router();
-const { User } = require("../database");
+const { User, PollForm } = require("../database");
 const { authenticateJWT } = require("../auth");
 const { adminAuthenticate } = require("../auth");
+const { Op } = require("sequelize");
 
-router.delete("/:id", authenticateJWT, adminAuthenticate ,async (req, res) => {
-  try {
-    const deleted = await User.destroy({ where: { id: req.params.id } });
-    if (!deleted) {
-      return res.status(404).send({ error: "User not found" });
+router.post(
+  "/disable-user/:id",
+  authenticateJWT,
+  adminAuthenticate,
+  async (req, res) => {
+    try {
+      const user = await User.findByPk(req.params.id);
+      if (!user) return res.status(404).send({ error: "User not found" });
+
+      user.disabled = true;
+      await user.save();
+
+      res.send({ message: `User ${user.username} has been disabled`, user });
+    } catch (error) {
+      console.error("Disable user error:", error);
+      res.status(500).send({ error: "Failed to disable user" });
     }
-    res.status(204).send();
-  } catch (err) {
-    console.error(err);
-    res.status(500).send({ error: "Failed to delete user" });
   }
-});
+);
 
-router.get("/AllUsers", authenticateJWT, adminAuthenticate, async (req, res) => {
-  try {
-    const Users = await User.findAll();
-    res.status(200).json(Users);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send({ error: "Failed to get all users" });
+router.get(
+  "/AllUsers",
+  authenticateJWT,
+  adminAuthenticate,
+  async (req, res) => {
+    try {
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const search = req.query.search || "";
+
+      const offset = (page - 1) * limit;
+
+      const { count, rows } = await User.findAndCountAll({
+        where: {
+          username: {
+            [Op.iLike]: `%${search}%`,
+          },
+        },
+        limit,
+        offset,
+      });
+
+      res.status(200).json({
+        users: rows,
+        pagination: {
+          total: count,
+          page,
+          pages: Math.ceil(count / limit),
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).send({ error: "Failed to get all users" });
+    }
   }
-});
+);
+
+router.post(
+  "/disablePoll/:id",
+  adminAuthenticate,
+  authenticateJWT,
+  async (req, res) => {
+    try {
+      const poll = await PollForm.findByPk(req.params.id);
+
+      if (!poll) return res.status(404).send({ error: "Form not found" });
+
+      poll.disabled = true; // or poll.isDisabled = true; depending on your model
+
+      await poll.save();
+
+      res.send({
+        message: `Poll form ${poll.title || poll.id} has been disabled`,
+        poll,
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).send({ error: "Failed to disable form" });
+    }
+  }
+);
 
 //maybe use to promote?
 router.post("/admin/promote/:id", adminAuthenticate, async (req, res) => {

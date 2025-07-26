@@ -8,6 +8,11 @@ const User = db.define("user", {
     defaultValue: false,
   },
 
+  disabled: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
+
   username: {
     type: DataTypes.STRING,
     allowNull: false,
