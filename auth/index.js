@@ -139,14 +139,19 @@ router.post("/signup", async (req, res) => {
       }
     }
 
+    const cleanedFirstName =
+      firstName && firstName.trim() !== "" ? firstName.trim() : null;
+    const cleanedLastName =
+      lastName && lastName.trim() !== "" ? lastName.trim() : null;
+    const cleanedEmail = email && email.trim() !== "" ? email.trim() : null;
     const passwordHash = User.hashPassword(password);
 
     const user = await User.create({
       username,
       passwordHash,
-      firstName,
-      lastName,
-      email,
+      firstName: cleanedFirstName,
+      lastName: cleanedLastName,
+      email: cleanedEmail,
       profilePicture,
     });
 

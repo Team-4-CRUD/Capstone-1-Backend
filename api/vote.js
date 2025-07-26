@@ -177,7 +177,6 @@ router.get("/results/:pollFormId", async (req, res) => {
       let roundNumber = 1;
 
       while (true) {
-        round++;
         // Initialize tally: each candidate starts with 0 votes this round
         const tally = {};
         for (const c of candidates) tally[c] = 0;
@@ -189,11 +188,12 @@ router.get("/results/:pollFormId", async (req, res) => {
 
         // It counts only the ballots that still have a valid current choice in this round.
         let activeBallots = 0;
-
+        
         for (const ballot of ballots) {
           // .find reads through each ballot from index 0 onward,
           // and .has checks whether each candidate is still in the race
-          const top = ballot.find((c) => candidates.has(c));
+          // FIX: use activeCandidates (not candidates) to reflect eliminations
+          const top = ballot.find((c) => activeCandidates.has(c));
           if (top) {
             tally[top]++;
             activeBallots++;
