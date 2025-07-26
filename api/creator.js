@@ -38,6 +38,12 @@ router.patch("/:id/publish", authenticateJWT, async (req, res) => {
     if (!poll)
       return res.status(404).json({ error: "Poll not found or unauthorized" });
 
+    if (poll.disabled) {
+      return res
+        .status(403)
+        .json({ error: "This poll has been disabled by an admin" });
+    }
+
     // Update status to "published"
     poll.status = "published";
     await poll.save();
@@ -88,6 +94,12 @@ router.post("/:id/duplicate", authenticateJWT, async (req, res) => {
 
     if (!poll) {
       return res.status(404).json({ error: "Poll not found or unauthorized" });
+    }
+
+    if (poll.disabled) {
+      return res
+        .status(403)
+        .json({ error: "This poll has been disabled by an admin" });
     }
 
     const newPoll = await PollForm.create({

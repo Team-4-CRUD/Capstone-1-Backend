@@ -9,6 +9,16 @@ const PollForm = db.define("pollform", {
     autoIncrement: true,
   },
 
+  disabled: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
+
+  ended: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
+
   title: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -32,7 +42,6 @@ const PollForm = db.define("pollform", {
       key: "id",
     },
   },
-  
 });
 
 module.exports = PollForm;

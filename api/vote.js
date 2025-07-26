@@ -10,19 +10,47 @@ function generateVoterToken() {
 }
 
 // Route to check if the authenticated user has voted in a poll
-router.get("/has-voted/:pollFormId", authenticateJWT, async (req, res) => {
+// router.get("/has-voted/:pollFormId", authenticateJWT, async (req, res) => {
+//   try {
+//     const userId = req.user.id;
+//     const { pollFormId } = req.params;
+//     const vote = await Vote.findOne({
+//       where: { user_id: userId, pollForm_id: pollFormId },
+//     });
+
+//     if(vote) {
+//       return res.status(409).json({ error: "User has already voted on this poll" });
+//     }
+//     res.json({ hasVoted: !!vote });
+//   } catch (err) {
+//     console.error("❌ Error in /has-voted:", err.message, err.stack);
+//     return res.status(500).json({ error: err.message });
+//   }
+// });
+
+// not sure if this what you were looking for
+router.get("/voted-polls", authenticateJWT, async (req, res) => {
   try {
     const userId = req.user.id;
-    const { pollFormId } = req.params;
-    const vote = await Vote.findOne({
-      where: { user_id: userId, pollForm_id: pollFormId },
+
+    const votes = await Vote.findAll({
+      where: { user_id: userId },
+      include: [
+        {
+          model: PollForm,
+        },
+      ],
     });
-    res.json({ hasVoted: !!vote });
+
+    const votedPolls = votes.map((vote) => vote.PollForm);
+
+    res.json({ votedPolls });
   } catch (err) {
-    console.error("❌ Error in /has-voted:", err.message, err.stack);
-    return res.status(500).json({ error: err.message });
+    console.error("❌ Error in /voted-polls:", err);
+    res.status(500).json({ error: "Failed to fetch voted polls" });
   }
 });
+
 
 router.post("/submit", authenticateJWT, async (req, res) => {
   console.log("🔍 Authenticated user ID:", req.user.id);
@@ -31,6 +59,18 @@ router.post("/submit", authenticateJWT, async (req, res) => {
 
   if (!pollFormId || !Array.isArray(response)) {
     return res.status(400).json({ error: "Invalid submission" });
+  }
+
+  //cant vote if disable
+  const pollForm = await PollForm.findByPk(pollFormId);
+  if (!pollForm) {
+    return res.status(404).json({ error: "Poll not found" });
+  }
+
+  if (pollForm.disabled) {
+    return res
+      .status(403)
+      .json({ error: "This poll is disabled and not accepting votes" });
   }
 
   try {
@@ -206,7 +246,11 @@ router.get("/TotalVoteCast/:PollId", async (req, res) => {
       where: { pollForm_id: pollId }, // only count votes for this poll
     });
 
-    res.status(200).send({ pollId, totalVotes });
+    res.status(200).send({
+      pollId,
+      title: poll.title,
+      totalVotes,
+    });
   } catch (err) {
     console.error(err);
     res
