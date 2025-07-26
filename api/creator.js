@@ -32,7 +32,7 @@ router.patch("/:id/publish", authenticateJWT, async (req, res) => {
 
     // Find poll and check ownership
     const poll = await PollForm.findOne({
-       where: { pollForm_id, creator_id: userId }, 
+      where: { pollForm_id, creator_id: userId },
     });
 
     if (!poll)
@@ -61,7 +61,7 @@ router.patch("/:id/end", authenticateJWT, async (req, res) => {
     if (!poll)
       return res.status(404).json({ error: "Poll not found or unauthorized" });
 
-    poll.status = "ended"; 
+    poll.status = "ended";
     await poll.save();
 
     res.json({ message: "Poll ended successfully", poll });
@@ -70,5 +70,52 @@ router.patch("/:id/end", authenticateJWT, async (req, res) => {
   }
 });
 
+// Duplicate a poll and its elements
+router.post("/:id/duplicate", authenticateJWT, async (req, res) => {
+  try {
+    const pollForm_id = req.params.id;
+    const userId = req.user.id;
+
+    const poll = await PollForm.findOne({
+      where: { pollForm_id, creator_id: userId },
+      include: [
+        {
+          model: pollElements,
+          as: "pollElements",
+        },
+      ],
+    });
+
+    if (!poll) {
+      return res.status(404).json({ error: "Poll not found or unauthorized" });
+    }
+
+    const newPoll = await PollForm.create({
+      ...poll.toJSON(),
+      pollForm_id: undefined,
+      status: "draft",
+      createdAt: undefined,
+      updatedAt: undefined,
+    });
+
+    if (poll.pollElements && poll.pollElements.length > 0) {
+      const now = Date.now();
+      const newElements = poll.pollElements.map((el, idx) => {
+        const { pollElement_id, pollForm_id, createdAt, updatedAt, ...rest } =
+          el;
+        if (rest.option) {
+          rest.option = `${rest.option} (Copy ${now}_${idx})`;
+        }
+        return { ...rest, pollForm_id: newPoll.pollForm_id };
+      });
+      await pollElements.bulkCreate(newElements);
+    }
+
+    res.json({ message: "Poll duplicated successfully", poll: newPoll });
+  } catch (err) {
+    console.error("Duplicate error:", err);
+    res.status(500).json({ error: "Failed to duplicate poll" });
+  }
+});
 
 module.exports = router;
