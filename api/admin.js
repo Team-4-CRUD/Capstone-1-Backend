@@ -72,13 +72,17 @@ router.post(
       const poll = await PollForm.findOne({
         where: {
           id: req.params.id,
-          disabled: false, // only fetch if not disabled
+          disabled: false,
         },
       });
 
-      if (!poll) return res.status(404).send({ error: "Poll not found or disabled" });
+      if (!poll || poll.disabled) {
+        return res
+          .status(403)
+          .send({ error: "Poll is disabled and cannot accept votes." });
+      }
 
-      poll.disabled = true; // or poll.isDisabled = true; depending on your model
+      poll.disabled = true;
 
       await poll.save();
 

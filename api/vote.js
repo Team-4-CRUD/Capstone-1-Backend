@@ -125,21 +125,21 @@ router.get("/results/:pollFormId", async (req, res) => {
 
       while (true) {
         round++;
-         // Initialize tally: each candidate starts with 0 votes this round
+        // Initialize tally: each candidate starts with 0 votes this round
         const tally = {};
         for (const c of candidates) tally[c] = 0;
         //       tally = {
-      //   A: 0,
-      //   B: 0,
-      //   C: 0,
-      // }
+        //   A: 0,
+        //   B: 0,
+        //   C: 0,
+        // }
 
-      // It counts only the ballots that still have a valid current choice in this round.
+        // It counts only the ballots that still have a valid current choice in this round.
         let activeBallots = 0;
 
         for (const ballot of ballots) {
-            // .find reads through each ballot from index 0 onward,
-        // and .has checks whether each candidate is still in the race
+          // .find reads through each ballot from index 0 onward,
+          // and .has checks whether each candidate is still in the race
           const top = ballot.find((c) => candidates.has(c));
           if (top) {
             tally[top]++;
@@ -147,20 +147,20 @@ router.get("/results/:pollFormId", async (req, res) => {
           }
         }
 
-         //lets check for winner, if anyone ovver 50%
-      // turns your tally object into an array of [candidate, count] pairs
-      // [ ["A", 2], ["B", 3], ["C", 1] ], 6 = activeBallots , 3 > 6/3 = 3 , no winner yet
+        //lets check for winner, if anyone ovver 50%
+        // turns your tally object into an array of [candidate, count] pairs
+        // [ ["A", 2], ["B", 3], ["C", 1] ], 6 = activeBallots , 3 > 6/3 = 3 , no winner yet
         for (const [candidate, count] of Object.entries(tally)) {
           if (count > activeBallots / 2) return candidate;
         }
 
         //This finds the smallest number of votes any candidate currently has in rank 1.
         const minVotes = Math.min(...Object.values(tally));
-          //returns [candidate, count] pairs.
+        //returns [candidate, count] pairs.
         const toEliminate = Object.entries(tally)
-        //picks pair where it matches min vote
+          //picks pair where it matches min vote
           .filter(([_, count]) => count === minVotes)
-          //find the key it belongs to 
+          //find the key it belongs to
           .map(([c]) => c);
 
         if (toEliminate.length === candidates.size) {
@@ -177,6 +177,26 @@ router.get("/results/:pollFormId", async (req, res) => {
   } catch (err) {
     console.error("❌ Error in /results:", err.message, err.stack);
     return res.status(500).json({ error: err.message });
+  }
+});
+
+router.get("/TotalVoteCast/:PollId", async (req, res) => {
+  try {
+    const pollId = req.params.PollId;
+
+    const poll = await PollForm.findByPk(pollId);
+    if (!poll) return res.status(404).send("Poll not found.");
+
+    const totalVotes = await Vote.count({
+      where: { pollForm_id: pollId }, // only count votes for this poll
+    });
+
+    res.status(200).send({ pollId, totalVotes });
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .send({ message: "Failed to get total votes for this poll" });
   }
 });
 

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { User } = require("../database");
+const { User, PollForm } = require("../database");
 const { authenticateJWT } = require("../auth");
 // Create User Info
 // Update logged-in user's info
@@ -107,6 +107,17 @@ router.patch("/:id", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
+
+// router.get("my-votedPoll", authenticateJWT, async, (req, res) => {
+//   try{
+//     const
+
+//   }catch(err){
+//     console.error(err);
+//     res.status(500).send({message: "No voted Polls found! "});
+//   }
+// })
 
 module.exports = router;
 
