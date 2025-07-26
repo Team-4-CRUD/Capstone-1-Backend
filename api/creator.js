@@ -96,30 +96,30 @@ router.post("/:id/duplicate", authenticateJWT, async (req, res) => {
       return res.status(404).json({ error: "Poll not found or unauthorized" });
     }
 
-    if (poll.disabled) {
-      return res
-        .status(403)
-        .json({ error: "This poll has been disabled by an admin" });
-    }
+    // Only copy the fields you want, not IDs or timestamps
+    const pollData = poll.toJSON();
+    const {
+      pollForm_id: _oldId,
+      createdAt,
+      updatedAt,
+      ...fieldsToCopy
+    } = pollData;
 
     const newPoll = await PollForm.create({
-      ...poll.toJSON(),
-      pollForm_id: undefined,
+      ...fieldsToCopy,
       status: "draft",
-      createdAt: undefined,
-      updatedAt: undefined,
     });
 
     if (poll.pollElements && poll.pollElements.length > 0) {
-      const now = Date.now();
-      const newElements = poll.pollElements.map((el, idx) => {
-        const { pollElement_id, pollForm_id, createdAt, updatedAt, ...rest } =
-          el;
-        if (rest.option) {
-          rest.option = `${rest.option} (Copy ${now}_${idx})`;
-        }
-        return { ...rest, pollForm_id: newPoll.pollForm_id };
-      });
+      const newElements = poll.pollElements
+        .filter((el) => el.option) // Only copy elements with a valid option
+        .map((el, idx) => {
+          const { pollElement_id, pollForm_id, createdAt, updatedAt, ...rest } =
+            el;
+          // Always ensure rest.option is a string
+          rest.option = `${rest.option} (Copy ${Date.now()}_${idx})`;
+          return { ...rest, pollForm_id: newPoll.pollForm_id };
+        });
       await pollElements.bulkCreate(newElements);
     }
 
@@ -129,5 +129,4 @@ router.post("/:id/duplicate", authenticateJWT, async (req, res) => {
     res.status(500).json({ error: "Failed to duplicate poll" });
   }
 });
-
 module.exports = router;
