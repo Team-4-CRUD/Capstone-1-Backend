@@ -171,9 +171,16 @@ router.delete("/:id", authenticateJWT, async (req, res) => {
 // create a new poll form
 router.post("/", authenticateJWT, async (req, res) => {
   const userId = req.user.id;
+
   try {
-<<<<<<< HEAD
-    const { title, description, status, Element, endDate } = req.body;
+    const {
+      title,
+      description,
+      status,
+      Element,
+      endDate,
+      private: isPrivate,
+    } = req.body;
 
     // Determine poll status based on endDate
     let pollStatus = status;
@@ -181,27 +188,14 @@ router.post("/", authenticateJWT, async (req, res) => {
     if (pollEndDate && pollEndDate <= new Date()) {
       pollStatus = "ended";
     }
-=======
-    const {
-      title,
-      description,
-      status,
-      Element,
-      private: isPrivate,
-    } = req.body;
->>>>>>> 480c5bba9d2b64882bfec7fd2d50e0c866edde04
 
     const pollForm = await PollForm.create(
       {
         title,
         description,
-<<<<<<< HEAD
         status: pollStatus,
         endDate: pollEndDate,
-=======
-        status,
         private: isPrivate,
->>>>>>> 480c5bba9d2b64882bfec7fd2d50e0c866edde04
         creator_id: userId,
         pollElements: Element,
       },
