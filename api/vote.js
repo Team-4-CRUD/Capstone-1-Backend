@@ -248,6 +248,9 @@ router.get("/results/:pollFormId", async (req, res) => {
     };
 
     const result = InstantRunOff(ballots);
+    if (result.rounds && result.rounds.length > 0) {
+      result.votes = result.rounds[0].tally;
+    }
     return res.json({ result });
   } catch (err) {
     console.error("❌ Error in /results:", err.message, err.stack);
