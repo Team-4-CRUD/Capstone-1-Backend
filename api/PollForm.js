@@ -172,13 +172,21 @@ router.delete("/:id", async (req, res) => {
 router.post("/", authenticateJWT, async (req, res) => {
   const userId = req.user.id;
   try {
-    const { title, description, status, Element } = req.body;
+    const { title, description, status, Element, endDate } = req.body;
+
+    // Determine poll status based on endDate
+    let pollStatus = status;
+    let pollEndDate = endDate ? new Date(endDate) : null;
+    if (pollEndDate && pollEndDate <= new Date()) {
+      pollStatus = "ended";
+    }
 
     const pollForm = await PollForm.create(
       {
         title,
         description,
-        status,
+        status: pollStatus,
+        endDate: pollEndDate,
         creator_id: userId,
         pollElements: Element,
       },

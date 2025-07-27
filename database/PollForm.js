@@ -34,6 +34,11 @@ const PollForm = db.define("pollform", {
     defaultValue: "draft",
   },
 
+  endDate: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+
   creator_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
