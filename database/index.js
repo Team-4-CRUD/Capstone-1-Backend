@@ -4,6 +4,7 @@ const User = require("./user");
 const PollForm = require("./PollForm");
 const Vote = require("./vote");
 const VoteRank = require("./VoteRank");
+const DraftVote = require("./DraftVotes");
 
 //Associations 🎂
 
@@ -35,6 +36,13 @@ VoteRank.belongsTo(pollElements, {
   as: "pollElement",
 });
 
+//DraftVote is not directly related to Vote because a draft isn’t a vote yet; it’s a separate entity.
+DraftVote.belongsTo(User, { foreignKey: "user_id" });
+User.hasMany(DraftVote, { foreignKey: "user_id" });
+
+DraftVote.belongsTo(PollForm, { foreignKey: "pollForm_id" });
+PollForm.hasMany(DraftVote, { foreignKey: "pollForm_id" });
+
 module.exports = {
   db,
   User,
@@ -42,4 +50,5 @@ module.exports = {
   pollElements,
   Vote,
   VoteRank,
+  DraftVote,
 };

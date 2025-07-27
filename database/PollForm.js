@@ -14,7 +14,7 @@ const PollForm = db.define("pollform", {
     defaultValue: false,
   },
 
-  ended: {
+  private: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },

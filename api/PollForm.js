@@ -144,7 +144,7 @@ router.patch("/:id", authenticateJWT, async (req, res) => {
 });
 
 // delete a pollform by id
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", authenticateJWT, async (req, res) => {
   const { id } = req.params;
 
   // Validate the ID
@@ -172,6 +172,7 @@ router.delete("/:id", async (req, res) => {
 router.post("/", authenticateJWT, async (req, res) => {
   const userId = req.user.id;
   try {
+<<<<<<< HEAD
     const { title, description, status, Element, endDate } = req.body;
 
     // Determine poll status based on endDate
@@ -180,13 +181,27 @@ router.post("/", authenticateJWT, async (req, res) => {
     if (pollEndDate && pollEndDate <= new Date()) {
       pollStatus = "ended";
     }
+=======
+    const {
+      title,
+      description,
+      status,
+      Element,
+      private: isPrivate,
+    } = req.body;
+>>>>>>> 480c5bba9d2b64882bfec7fd2d50e0c866edde04
 
     const pollForm = await PollForm.create(
       {
         title,
         description,
+<<<<<<< HEAD
         status: pollStatus,
         endDate: pollEndDate,
+=======
+        status,
+        private: isPrivate,
+>>>>>>> 480c5bba9d2b64882bfec7fd2d50e0c866edde04
         creator_id: userId,
         pollElements: Element,
       },

@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { Vote, VoteRank, pollElements, PollForm } = require("../database");
 const { authenticateJWT } = require("../auth");
+const { authenticateJWTIfAvailable } = require("../auth");
 
 const crypto = require("crypto");
 
@@ -45,16 +46,14 @@ router.get("/voted-polls", authenticateJWT, async (req, res) => {
   }
 });
 
-router.post("/submit", authenticateJWT, async (req, res) => {
-  console.log("🔍 Authenticated user ID:", req.user.id);
-  const userId = req.user.id;
+router.post("/submit", authenticateJWTIfAvailable, async (req, res) => {
+  const userId = req.user?.id; // ✅ Optional chaining
   const { pollFormId, response } = req.body;
 
   if (!pollFormId || !Array.isArray(response)) {
     return res.status(400).json({ error: "Invalid submission" });
   }
 
-  //cant vote if disable
   const pollForm = await PollForm.findByPk(pollFormId);
   if (!pollForm) {
     return res.status(404).json({ error: "Poll not found" });
@@ -66,14 +65,19 @@ router.post("/submit", authenticateJWT, async (req, res) => {
       .json({ error: "This poll is disabled and not accepting votes" });
   }
 
+  //check is logged user can use
+  if (pollForm.private && !req.user) {
+    return res
+      .status(401)
+      .json({ error: "This poll is private. Please log in to vote." });
+  }
+
   try {
-    // Fetch poll elements for validation
     const pollEle = await pollElements.findAll({
       where: { PollFormId: pollFormId },
     });
     const validElementIds = pollEle.map((e) => e.element_id);
 
-    // Check for invalid element IDs in response
     const invalidElements = response.filter(
       (r) => !validElementIds.includes(r.elementId)
     );
@@ -83,7 +87,6 @@ router.post("/submit", authenticateJWT, async (req, res) => {
         .json({ error: "Response contains invalid element IDs" });
     }
 
-    // Validate ranks and duplicates
     const ranks = response.map((r) => r.rank);
     const elements = response.map((r) => r.elementId);
     const maxRank = pollEle.length;
@@ -91,7 +94,7 @@ router.post("/submit", authenticateJWT, async (req, res) => {
     if (ranks.some((rank) => rank < 1 || rank > maxRank)) {
       return res
         .status(400)
-        .json({ error: "Ranks must be between 1 and " + pollEle.length });
+        .json({ error: "Ranks must be between 1 and " + maxRank });
     }
 
     if (new Set(ranks).size !== ranks.length) {
@@ -104,21 +107,18 @@ router.post("/submit", authenticateJWT, async (req, res) => {
         .json({ error: "Duplicate elements in response are not allowed" });
     }
 
-    // Create vote record
     const vote = await Vote.create({
-      user_id: userId,
+      user_id: userId || null,
       pollForm_id: pollFormId,
       voterToken: generateVoterToken(),
     });
 
-    // Prepare voteRanks for bulk insert
     const voteRanks = response.map((r) => ({
       vote_id: vote.Vote_id,
       element_id: r.elementId,
       rank: r.rank,
     }));
 
-    // Insert voteRanks
     const createdRanks = await VoteRank.bulkCreate(voteRanks);
 
     res.status(201).json({
@@ -133,7 +133,6 @@ router.post("/submit", authenticateJWT, async (req, res) => {
 });
 
 //get all the votes from the form
-
 router.get("/results/:pollFormId", async (req, res) => {
   try {
     const { pollFormId } = req.params;
@@ -282,4 +281,7 @@ router.get("/TotalVoteCast/:PollId", async (req, res) => {
   }
 });
 
+
+
 module.exports = router;
+
