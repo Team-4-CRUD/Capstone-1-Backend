@@ -25,25 +25,22 @@ router.get("/has-voted/:pollFormId", authenticateJWT, async (req, res) => {
   }
 });
 
-// not sure if this what you were looking for
 router.get("/voted-polls", authenticateJWT, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const votes = await Vote.findAll({
-      where: { user_id: userId },
+    const polls = await PollForm.findAll({
       include: [
         {
-          model: PollForm,
+          model: Vote,
+          where: { user_id: userId },
         },
       ],
     });
 
-    const votedPolls = votes.map((vote) => vote.PollForm);
-
-    res.json({ votedPolls });
+    res.json({ votedPolls: polls });
   } catch (err) {
-    console.error("❌ Error in /voted-polls:", err);
+    console.error("❌ Error in /voted-polls (alt):", err);
     res.status(500).json({ error: "Failed to fetch voted polls" });
   }
 });
@@ -188,7 +185,7 @@ router.get("/results/:pollFormId", async (req, res) => {
 
         // It counts only the ballots that still have a valid current choice in this round.
         let activeBallots = 0;
-        
+
         for (const ballot of ballots) {
           // .find reads through each ballot from index 0 onward,
           // and .has checks whether each candidate is still in the race
