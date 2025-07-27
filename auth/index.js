@@ -307,4 +307,28 @@ const adminAuthenticate = (req, res, next) => {
   });
 };
 
-module.exports = { router, authenticateJWT, adminAuthenticate };
+const authenticateJWTIfAvailable = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  const token = (authHeader && authHeader.split(" ")[1]) || req.cookies.token;
+
+  if (!token) {
+    req.user = null; // Allow anonymous access
+    return next();
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      req.user = null; // Token invalid, treat as guest
+    } else {
+      req.user = user;
+    }
+    next();
+  });
+};
+
+module.exports = {
+  router,
+  authenticateJWT,
+  adminAuthenticate,
+  authenticateJWTIfAvailable,
+};

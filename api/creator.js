@@ -129,4 +129,5 @@ router.post("/:id/duplicate", authenticateJWT, async (req, res) => {
     res.status(500).json({ error: "Failed to duplicate poll" });
   }
 });
+
 module.exports = router;

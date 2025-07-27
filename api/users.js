@@ -5,27 +5,6 @@ const { authenticateJWT } = require("../auth");
 // Create User Info
 // Update logged-in user's info
 
-// router.put("/UserInfo", authenticateJWT, async (req, res) => {
-//   try {
-//     const { firstName, lastName, email, profilePicture } = req.body;
-
-//     const user = await User.findByPk(req.user.id);
-//     if (!user) return res.status(404).send({ error: "User not found" });
-
-//     user.firstName = firstName || user.firstName;
-//     user.lastName = lastName || user.lastName;
-//     user.email = email || user.email;
-//     user.profilePicture = profilePicture || user.profilePicture;
-
-//     await user.save();
-
-//     res.status(200).send(user);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).send({ error: "Failed to update user info" });
-//   }
-// });
-
 // // users.js or auth.js
 router.get("/me", authenticateJWT, async (req, res) => {
   try {
@@ -81,6 +60,7 @@ router.get("/:id", async (req, res) => {
     res.status(500).send({ error: "Failed to get user" });
   }
 });
+
 router.patch("/:id", async (req, res) => {
   const userId = parseInt(req.params.id);
   const { firstName, lastName, email, profilePicture } = req.body;

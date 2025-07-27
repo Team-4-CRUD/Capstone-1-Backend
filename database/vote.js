@@ -16,13 +16,13 @@ const Vote = db.define("vote", {
 
   user_id: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
     references: {
       model: "users",
       key: "id",
     },
   },
-    pollForm_id: {
+  pollForm_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {

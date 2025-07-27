@@ -144,7 +144,7 @@ router.patch("/:id", authenticateJWT, async (req, res) => {
 });
 
 // delete a pollform by id
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", authenticateJWT, async (req, res) => {
   const { id } = req.params;
 
   // Validate the ID
@@ -172,13 +172,20 @@ router.delete("/:id", async (req, res) => {
 router.post("/", authenticateJWT, async (req, res) => {
   const userId = req.user.id;
   try {
-    const { title, description, status, Element } = req.body;
+    const {
+      title,
+      description,
+      status,
+      Element,
+      private: isPrivate,
+    } = req.body;
 
     const pollForm = await PollForm.create(
       {
         title,
         description,
         status,
+        private: isPrivate,
         creator_id: userId,
         pollElements: Element,
       },
