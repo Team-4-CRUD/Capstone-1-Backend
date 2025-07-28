@@ -59,6 +59,16 @@ router.post("/submit", authenticateJWTIfAvailable, async (req, res) => {
     return res.status(404).json({ error: "Poll not found" });
   }
 
+  // Check if poll has ended by endDate
+  if (pollForm.endDate && new Date(pollForm.endDate) <= new Date()) {
+    // Optionally update status
+    if (pollForm.status !== "ended") {
+      pollForm.status = "ended";
+      await pollForm.save();
+    }
+    return res.status(403).json({ message: "Voting has ended for this poll." });
+  }
+
   if (pollForm.disabled) {
     return res
       .status(403)
@@ -281,7 +291,4 @@ router.get("/TotalVoteCast/:PollId", async (req, res) => {
   }
 });
 
-
-
 module.exports = router;
-
