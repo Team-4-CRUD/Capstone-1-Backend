@@ -40,7 +40,10 @@ VoteRank.belongsTo(pollElements, {
 DraftVote.belongsTo(User, { foreignKey: "user_id" });
 User.hasMany(DraftVote, { foreignKey: "user_id" });
 
-DraftVote.belongsTo(PollForm, { foreignKey: "pollForm_id" });
+DraftVote.belongsTo(PollForm, {
+  foreignKey: "pollForm_id",
+  onDelete: "CASCADE",
+});
 PollForm.hasMany(DraftVote, { foreignKey: "pollForm_id" });
 
 module.exports = {

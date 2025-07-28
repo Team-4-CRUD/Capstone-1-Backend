@@ -22,3 +22,14 @@ When an error occurs on the backend (Express), you'll see a message in the termi
 
 This project has a vercel.json file, which will make it easier to deploy this project to Vercel. Check the video listed in the cohort repository for a walkthrough of how to connect your deployed Express server to Neon Postgres.
 
+## POSTGRES COMMANDS
+
+only if are trying to delete a poll that has saved votes: 
+ALTER TABLE "draftVotes"
+DROP CONSTRAINT IF EXISTS "draftVotes_pollForm_id_fkey";
+
+ALTER TABLE "draftVotes"
+ADD CONSTRAINT "draftVotes_pollForm_id_fkey"
+FOREIGN KEY ("pollForm_id")
+REFERENCES "pollforms"("pollForm_id")
+ON DELETE CASCADE;

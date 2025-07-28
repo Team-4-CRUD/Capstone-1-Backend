@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { pollElements, PollForm } = require("../database");
+const { pollElements, PollForm, DraftVote } = require("../database");
 
 // get all poll elements
 router.get("/", async (req, res) => {
@@ -50,21 +50,36 @@ router.patch("/:id", async (req, res) => {
 });
 
 // delete a poll elements by id
-router.delete("/:id", async (req, res) => {
+
+router.delete("/:pollFormId", async (req, res) => {
+  const { pollFormId } = req.params;
+
   try {
-    const pollEl = await pollElements.findByPk(req.params.id);
-    if (!pollEl) {
-      return res.status(404).send("Failed to delete a Poll Element! ❌");
+    const drafts = await DraftVote.findAll({
+      where: { pollForm_id: pollFormId },
+    });
+    console.log("Drafts to delete:", drafts);
+
+    // Delete related DraftVotes first to prevent FK violation
+    await DraftVote.destroy({
+      where: { pollForm_id: pollFormId },
+    });
+
+    // Then delete the PollForm
+    const deleted = await PollForm.destroy({
+      where: { pollForm_id: pollFormId },
+    });
+
+    if (!deleted) {
+      return res.status(404).json({ message: "PollForm not found ❌" });
     }
-    await pollEl.destroy();
-    res.status(200).send(`Poll Element ${req.params.id} has been deleted! ✅`);
+
+    res.status(200).json({ message: `PollForm ${pollFormId} deleted ✅` });
   } catch (err) {
     console.error(err);
-    console.log("Failed to delete a Poll Element! ❌");
-    res.status(500).send({ error: "Failed to delete a Poll Element! ❌" });
+    res.status(500).json({ message: "Failed to delete PollForm ❌" });
   }
 });
-
 // create a new poll element
 // router.post("/", async (req, res) => {
 //   try {
